@@ -224,6 +224,7 @@
     .alert-success {
         background-color: #28a745;
         color: #fff;
+        margin-right: 2px;
     }
 
     .alert-danger {
@@ -574,7 +575,6 @@
                             <input type="text" name="image_links[]" placeholder="Enter image URL..." required>
                         </div>
                     </div>
-                    <button type="button" class="add-image-btn" id="addImageLinkBtn">Add Another Image</button>
                 </div>
 
                 <!-- Submit Button -->
@@ -600,11 +600,11 @@
         </div>
 
         <!-- Main Feed -->
-        <div class="main-feed" style="margin-top: 3rem;">
+        <!-- <div class="main-feed" style="margin-top: 3rem;">
             <div class="feed-header">
-                <h2>Posts</h2>
+                <h2>Posts</h2> -->
                 <!-- Updated Select Element with ID and Value Attributes -->
-                <select id="sortPostsSelect">
+                <!-- <select id="sortPostsSelect">
                     <option value="newest" selected>Newest</option>
                     <option value="popular">Popular</option>
                     <option value="oldest">Oldest</option>
@@ -616,8 +616,8 @@
             <div class="see-more-posts-container">
                 <span class="see-more-btn" id="seeMorePostsBtn">See More Posts</span>
                 <span class="reset-btn" id="resetPostsBtn" style="display:none;">Reset</span>
-            </div>
-        </div>
+            </div> -->
+        <!-- </div> -->
     </div>
 </div>
 

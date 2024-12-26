@@ -10,6 +10,7 @@ use App\Models\Image;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Comment;
 
 class PostController extends Controller
 {
@@ -190,5 +191,38 @@ class PostController extends Controller
         $posts = $posts->paginate(10); // Fetch 10 posts per page
 
         return response()->json($posts);
+    }
+
+    public function getDetails($id)
+    {
+        $post = Post::with(['comments.user', 'likes.user'])->findOrFail($id);
+    
+        return response()->json([
+            'comments' => $post->comments->where('hidden', 0)->map(function ($comment) {
+                return [
+                    'id' => $comment->id,
+                    'user' => $comment->user->name,
+                    'text' => $comment->text,
+                ];
+            }),
+            'likes' => $post->likes->map(function ($like) {
+                return [
+                    'user' => $like->user->name,
+                ];
+            }),
+        ]);
+    }
+
+    public function hideComment(Request $request, $id)
+    {
+        $comment = Comment::find($id);
+        if ($comment) {
+            $comment->hidden = 1;
+            $comment->save();
+    
+            return response()->json(['message' => 'Comment hidden successfully']);
+        }
+    
+        return response()->json(['message' => 'Comment not found'], 404);
     }
 }
