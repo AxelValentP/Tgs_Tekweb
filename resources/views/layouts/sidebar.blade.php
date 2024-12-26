@@ -196,6 +196,23 @@
         .logout-form button.nav-item:hover {
             background: #333;
         }
+        .notification-badge {
+    position: absolute; /* Absolute positioning relative to .nav-item */
+    background-color: red !important; /* Ensure it's visible */
+    color: white;
+    border-radius: 50%;
+    font-size: 0.8rem;
+    font-weight: bold;
+    display: flex !important; /* Force display */
+    align-items: center;
+    justify-content: center;
+    width: 20px; /* Increase size for debugging */
+    height: 20px; /* Increase size for debugging */
+    top: -4px;
+    right: -4px;
+    z-index: 10; /* Ensure it appears above other elements */
+}
+
 
         /* Responsive Adjustments (Optional) */
         @media (max-width: 768px) {
@@ -245,11 +262,13 @@
             </a>
 
             <!-- Notification Menu Item -->
-            <a href="" class="nav-item {{ Request::is('notifications') ? 'active' : '' }}" aria-label="Notifications">
-                <i class="lni lni-alarm" aria-hidden="true"></i>
-                <span class="nav-text">NOTIFICATIONS</span>
-                <span class="notification-badge" aria-label="3 new notifications">3</span> <!-- Hardcoded count -->
-            </a>
+            <a href="{{ route('notification') }}" class="nav-item {{ Request::is('notifications') ? 'active' : '' }}" aria-label="Notifications">
+    <i class="lni lni-alarm" aria-hidden="true"></i>
+    <span class="nav-text">NOTIFICATIONS</span>
+    <span class="notification-badge" style="display: none;" aria-label="Unread notifications count">0</span>
+</a>
+
+
         </div>
 
         <div class="sidebar-footer">
@@ -269,6 +288,34 @@
             sidebar.classList.toggle('expanded');
             document.body.classList.toggle('sidebar-open');
         }
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+    const badge = document.querySelector('.notification-badge');
+
+    // Fetch jumlah notifikasi yang belum dibaca
+    fetch('/notifications/unread-count', {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+            const unreadCount = data.unread_notifications_count;
+
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount;
+                badge.style.display = 'flex'; // Tampilkan badge jika ada notifikasi
+            } else {
+                badge.style.display = 'none'; // Sembunyikan badge jika tidak ada notifikasi
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching unread notifications count:', error);
+        });
+});
+
     </script>
 
 </body>

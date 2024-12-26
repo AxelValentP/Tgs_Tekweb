@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Comment;
+use App\Models\Like;
 
 class PostController extends Controller
 {
@@ -194,35 +195,139 @@ class PostController extends Controller
     }
 
     public function getDetails($id)
-    {
-        $post = Post::with(['comments.user', 'likes.user'])->findOrFail($id);
-    
-        return response()->json([
-            'comments' => $post->comments->where('hidden', 0)->map(function ($comment) {
+{
+    $post = Post::findOrFail($id);
+
+    // Query directly from the database
+    $comments = Comment::where('post_id', $id)
+        ->where('hide', 0)
+        ->with('user')
+        ->get()
+        ->map(function ($comment) {
+            return [
+                'id' => $comment->id,
+                'user' => $comment->user->name,
+                'text' => $comment->text,
+            ];
+        });
+
+    $likes = $post->likes()->with('user')->get()->map(function ($like) {
+        return [
+            'user' => $like->user->name,
+        ];
+    });
+
+    return response()->json([
+        'comments' => $comments,
+        'likes' => $likes,
+    ]);
+}
+
+public function getHiddenComments($id)
+{
+    $hiddenComments = Comment::where('post_id', $id)
+        ->where('hide', 1)
+        ->with('user')
+        ->get()
+        ->map(function ($comment) {
+            return [
+                'id' => $comment->id,
+                'user' => $comment->user->name,
+                'text' => $comment->text,
+            ];
+        });
+
+    return response()->json([
+        'hiddenComments' => $hiddenComments,
+    ]);
+}
+
+public function hideComment($id)
+{
+    try {
+        $comment = Comment::findOrFail($id);
+
+        $comment->hide = 1;
+        $comment->save();
+
+        // Ambil komentar tersembunyi untuk memperbarui tabel
+        $hiddenComments = Comment::where('post_id', $comment->post_id)
+            ->where('hide', 1)
+            ->with('user')
+            ->get()
+            ->map(function ($comment) {
                 return [
                     'id' => $comment->id,
                     'user' => $comment->user->name,
                     'text' => $comment->text,
                 ];
-            }),
-            'likes' => $post->likes->map(function ($like) {
-                return [
-                    'user' => $like->user->name,
-                ];
-            }),
+            });
+
+        return response()->json([
+            'message' => 'Comment hidden successfully.',
+            'hiddenComments' => $hiddenComments,
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json(['message' => 'Failed to hide comment.'], 500);
+    }
+}
+
+
+
+    public function unhideComment($id)
+    {
+        try {
+            $comment = Comment::findOrFail($id);
+    
+            $comment->hide = 0;
+            $comment->save();
+    
+            // Ambil komentar yang tidak tersembunyi langsung dari database
+            $comments = Comment::where('post_id', $comment->post_id)
+                ->where('hide', 0)
+                ->with('user')
+                ->get()
+                ->map(function ($comment) {
+                    return [
+                        'id' => $comment->id,
+                        'user' => $comment->user->name,
+                        'text' => $comment->text,
+                    ];
+                });
+    
+            return response()->json([
+                'message' => 'Comment successfully unhidden.',
+                'comments' => $comments,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Failed to unhide comment.'], 500);
+        }
+    }
+    
+
+    public function getUnreadCount()
+    {
+        $userId = Auth::id();
+    
+        // Ambil ID dari semua postingan milik user
+        $userPosts = Post::where('user_id', $userId)->pluck('id');
+    
+        // Hitung jumlah komentar yang belum dilihat
+        $unreadCommentsCount = Comment::whereIn('post_id', $userPosts)
+            ->where('seen', 0)
+            ->count();
+    
+        // Hitung jumlah likes yang belum dilihat
+        $unreadLikesCount = Like::whereIn('post_id', $userPosts)
+            ->where('seen', 0)
+            ->count();
+    
+        // Totalkan jumlah notifikasi
+        $totalUnreadCount = $unreadCommentsCount + $unreadLikesCount;
+    
+        return response()->json([
+            'unread_notifications_count' => $totalUnreadCount,
         ]);
     }
 
-    public function hideComment(Request $request, $id)
-    {
-        $comment = Comment::find($id);
-        if ($comment) {
-            $comment->hidden = 1;
-            $comment->save();
-    
-            return response()->json(['message' => 'Comment hidden successfully']);
-        }
-    
-        return response()->json(['message' => 'Comment not found'], 404);
-    }
 }
