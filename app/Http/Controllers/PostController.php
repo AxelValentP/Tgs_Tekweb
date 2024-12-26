@@ -21,7 +21,9 @@ class PostController extends Controller
     public function create()
     {
         // Fetch latest posts with relations for display (optional)
-        $posts = Post::with(['user', 'topics', 'images', 'likes', 'comments.user'])->latest()->get();
+        $posts = Post::with(['user', 'topics', 'images', 'likes', 'comments' => function ($query) {
+            $query->where('hide', false);
+        }])->latest()->get();        
         return view('upload', compact('posts'));
     }
 
@@ -168,22 +170,30 @@ class PostController extends Controller
 
         switch ($sort) {
             case 'newest':
-                $posts = Post::with(['user', 'images', 'comments.user'])
+                $posts = Post::with(['user', 'images', 'comments' => function ($query) {
+                    $query->where('hide', false); // Fetch only non-hidden comments
+                }])
                     ->orderBy('created_at', 'desc');
                 break;
 
             case 'popular':
-                $posts = Post::with(['user', 'images', 'comments.user'])
+                $posts = Post::with(['user', 'images', 'comments' => function ($query) {
+                    $query->where('hide', false); // Fetch only non-hidden comments
+                }])
                     ->orderBy('likes_count', 'desc');
                 break;
 
             case 'oldest':
-                $posts = Post::with(['user', 'images', 'comments.user'])
+                $posts = Post::with(['user', 'images', 'comments' => function ($query) {
+                    $query->where('hide', false); // Fetch only non-hidden comments
+                }])
                     ->orderBy('created_at', 'asc');
                 break;
 
             default:
-                $posts = Post::with(['user', 'images', 'comments.user'])
+                $posts = Post::with(['user', 'images', 'comments' => function ($query) {
+                    $query->where('hide', false); // Fetch only non-hidden comments
+                }])
                     ->orderBy('created_at', 'desc');
                 break;
         }
