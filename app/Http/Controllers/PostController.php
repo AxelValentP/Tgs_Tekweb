@@ -30,7 +30,7 @@ class PostController extends Controller
      */
     public function store(StorePostRequest $request)
     {
-       
+
 
         // Validate the request data (optional if StorePostRequest already validates it)
         $validated = $request->validate([
@@ -39,7 +39,7 @@ class PostController extends Controller
             'topic' => 'nullable|string|max:255',
             'image_links.*' => 'nullable|url',
         ]);
-    
+
         // Step 1: Create the post
         $post = Post::create([
             'user_id' => auth()->id(),
@@ -47,10 +47,10 @@ class PostController extends Controller
             'status' => $request->status === 'public' ? 1 : 0, // Map public/private to 1/0
             'likes_count' => 0, // Initialize likes_count
         ]);
-    
+
         // Step 2: Handle topics
         $topicIds = [];
-    
+
         if (!empty($request->topic)) {
             $topicName = trim($request->topic);
             if ($topicName !== '') {
@@ -61,12 +61,12 @@ class PostController extends Controller
                 $topicIds[] = $topic->id;
             }
         }
-    
+
         // Attach topics to the post
         if (!empty($topicIds)) {
             $post->topics()->sync($topicIds);
         }
-    
+
         // Step 3: Handle images
         if (!empty($request->image_links)) {
             foreach ($request->image_links as $imageLink) {
@@ -76,12 +76,12 @@ class PostController extends Controller
                 ]);
             }
         }
-    
+
         // Redirect back with success message
         return redirect()->route('upload')->with('success', 'Post created successfully!');
     }
-    
-    
+
+
 
     /**
      * Like or unlike a post.
@@ -179,92 +179,65 @@ class PostController extends Controller
     {
         $sort = $request->get('sort', 'newest'); // Default to 'newest' if not provided
 
-        switch ($sort) {
-            case 'newest':
-                $posts = Post::with(['user', 'images', 'comments.user'])
-                    ->orderBy('created_at', 'desc');
-                break;
+        // Start building the query with the status filter
+        $query = Post::where('status', 1) // Only fetch public posts
+            ->with(['user', 'images', 'comments.user']);
 
+        // Apply sorting based on the request
+        switch ($sort) {
             case 'popular':
-                $posts = Post::with(['user', 'images', 'comments.user'])
-                    ->orderBy('likes_count', 'desc');
+                $query->orderBy('likes_count', 'desc');
                 break;
 
             case 'oldest':
-                $posts = Post::with(['user', 'images', 'comments.user'])
-                    ->orderBy('created_at', 'asc');
+                $query->orderBy('created_at', 'asc');
                 break;
 
+            case 'newest':
             default:
-                $posts = Post::with(['user', 'images', 'comments.user'])
-                    ->orderBy('created_at', 'desc');
+                $query->orderBy('created_at', 'desc');
                 break;
         }
 
-        // Implement pagination (optional but recommended)
-        $posts = $posts->paginate(10); // Fetch 10 posts per page
+        // Implement pagination (fetch 10 posts per page)
+        $posts = $query->paginate(10);
 
         return response()->json($posts);
     }
 
+
     public function getDetails($id)
-{
-    $post = Post::findOrFail($id);
+    {
+        $post = Post::findOrFail($id);
 
-    // Query directly from the database
-    $comments = Comment::where('post_id', $id)
-        ->where('hide', 0)
-        ->with('user')
-        ->get()
-        ->map(function ($comment) {
+        // Query directly from the database
+        $comments = Comment::where('post_id', $id)
+            ->where('hide', 0)
+            ->with('user')
+            ->get()
+            ->map(function ($comment) {
+                return [
+                    'id' => $comment->id,
+                    'user' => $comment->user->name,
+                    'text' => $comment->text,
+                ];
+            });
+
+        $likes = $post->likes()->with('user')->get()->map(function ($like) {
             return [
-                'id' => $comment->id,
-                'user' => $comment->user->name,
-                'text' => $comment->text,
+                'user' => $like->user->name,
             ];
         });
 
-    $likes = $post->likes()->with('user')->get()->map(function ($like) {
-        return [
-            'user' => $like->user->name,
-        ];
-    });
+        return response()->json([
+            'comments' => $comments,
+            'likes' => $likes,
+        ]);
+    }
 
-    return response()->json([
-        'comments' => $comments,
-        'likes' => $likes,
-    ]);
-}
-
-public function getHiddenComments($id)
-{
-    $hiddenComments = Comment::where('post_id', $id)
-        ->where('hide', 1)
-        ->with('user')
-        ->get()
-        ->map(function ($comment) {
-            return [
-                'id' => $comment->id,
-                'user' => $comment->user->name,
-                'text' => $comment->text,
-            ];
-        });
-
-    return response()->json([
-        'hiddenComments' => $hiddenComments,
-    ]);
-}
-
-public function hideComment($id)
-{
-    try {
-        $comment = Comment::findOrFail($id);
-
-        $comment->hide = 1;
-        $comment->save();
-
-        // Ambil komentar tersembunyi untuk memperbarui tabel
-        $hiddenComments = Comment::where('post_id', $comment->post_id)
+    public function getHiddenComments($id)
+    {
+        $hiddenComments = Comment::where('post_id', $id)
             ->where('hide', 1)
             ->with('user')
             ->get()
@@ -277,13 +250,39 @@ public function hideComment($id)
             });
 
         return response()->json([
-            'message' => 'Comment hidden successfully.',
             'hiddenComments' => $hiddenComments,
-        ], 200);
-    } catch (\Exception $e) {
-        return response()->json(['message' => 'Failed to hide comment.'], 500);
+        ]);
     }
-}
+
+    public function hideComment($id)
+    {
+        try {
+            $comment = Comment::findOrFail($id);
+
+            $comment->hide = 1;
+            $comment->save();
+
+            // Ambil komentar tersembunyi untuk memperbarui tabel
+            $hiddenComments = Comment::where('post_id', $comment->post_id)
+                ->where('hide', 1)
+                ->with('user')
+                ->get()
+                ->map(function ($comment) {
+                    return [
+                        'id' => $comment->id,
+                        'user' => $comment->user->name,
+                        'text' => $comment->text,
+                    ];
+                });
+
+            return response()->json([
+                'message' => 'Comment hidden successfully.',
+                'hiddenComments' => $hiddenComments,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Failed to hide comment.'], 500);
+        }
+    }
 
 
 
@@ -291,10 +290,10 @@ public function hideComment($id)
     {
         try {
             $comment = Comment::findOrFail($id);
-    
+
             $comment->hide = 0;
             $comment->save();
-    
+
             // Ambil komentar yang tidak tersembunyi langsung dari database
             $comments = Comment::where('post_id', $comment->post_id)
                 ->where('hide', 0)
@@ -307,7 +306,7 @@ public function hideComment($id)
                         'text' => $comment->text,
                     ];
                 });
-    
+
             return response()->json([
                 'message' => 'Comment successfully unhidden.',
                 'comments' => $comments,
@@ -316,45 +315,43 @@ public function hideComment($id)
             return response()->json(['message' => 'Failed to unhide comment.'], 500);
         }
     }
-    
+
 
     public function getUnreadCount()
     {
         $userId = Auth::id();
-    
+
         // Ambil ID dari semua postingan milik user
         $userPosts = Post::where('user_id', $userId)->pluck('id');
-    
+
         // Hitung jumlah komentar yang belum dilihat
         $unreadCommentsCount = Comment::whereIn('post_id', $userPosts)
             ->where('seen', 0)
             ->count();
-    
+
         // Hitung jumlah likes yang belum dilihat
         $unreadLikesCount = Like::whereIn('post_id', $userPosts)
             ->where('seen', 0)
             ->count();
-    
+
         // Totalkan jumlah notifikasi
         $totalUnreadCount = $unreadCommentsCount + $unreadLikesCount;
-    
+
         return response()->json([
             'unread_notifications_count' => $totalUnreadCount,
         ]);
     }
 
     public function toggleStatus(Post $post, Request $request)
-{
-    // Toggle status
-    $post->status = $post->status === 1 ? 0 : 1;
-    $post->save();
+    {
+        // Toggle status
+        $post->status = $post->status === 1 ? 0 : 1;
+        $post->save();
 
-    // Return response
-    return response()->json([
-        'status' => $post->status,
-        'message' => 'Post status updated successfully!',
-    ]);
-}
-
-
+        // Return response
+        return response()->json([
+            'status' => $post->status,
+            'message' => 'Post status updated successfully!',
+        ]);
+    }
 }
