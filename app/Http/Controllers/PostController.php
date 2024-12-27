@@ -10,6 +10,8 @@ use App\Models\Image;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Comment;
+use App\Models\Like;
 
 class PostController extends Controller
 {
@@ -19,7 +21,9 @@ class PostController extends Controller
     public function create()
     {
         // Fetch latest posts with relations for display (optional)
-        $posts = Post::with(['user', 'topics', 'images', 'likes', 'comments.user'])->latest()->get();
+        $posts = Post::with(['user', 'topics', 'images', 'likes', 'comments' => function ($query) {
+            $query->where('hide', false);
+        }])->latest()->get();        
         return view('upload', compact('posts'));
     }
 
@@ -166,22 +170,30 @@ class PostController extends Controller
 
         switch ($sort) {
             case 'newest':
-                $posts = Post::with(['user', 'images', 'comments.user'])
+                $posts = Post::with(['user', 'images', 'comments' => function ($query) {
+                    $query->where('hide', false); // Fetch only non-hidden comments
+                }])
                     ->orderBy('created_at', 'desc');
                 break;
 
             case 'popular':
-                $posts = Post::with(['user', 'images', 'comments.user'])
+                $posts = Post::with(['user', 'images', 'comments' => function ($query) {
+                    $query->where('hide', false); // Fetch only non-hidden comments
+                }])
                     ->orderBy('likes_count', 'desc');
                 break;
 
             case 'oldest':
-                $posts = Post::with(['user', 'images', 'comments.user'])
+                $posts = Post::with(['user', 'images', 'comments' => function ($query) {
+                    $query->where('hide', false); // Fetch only non-hidden comments
+                }])
                     ->orderBy('created_at', 'asc');
                 break;
 
             default:
-                $posts = Post::with(['user', 'images', 'comments.user'])
+                $posts = Post::with(['user', 'images', 'comments' => function ($query) {
+                    $query->where('hide', false); // Fetch only non-hidden comments
+                }])
                     ->orderBy('created_at', 'desc');
                 break;
         }
@@ -191,4 +203,141 @@ class PostController extends Controller
 
         return response()->json($posts);
     }
+
+    public function getDetails($id)
+{
+    $post = Post::findOrFail($id);
+
+    // Query directly from the database
+    $comments = Comment::where('post_id', $id)
+        ->where('hide', 0)
+        ->with('user')
+        ->get()
+        ->map(function ($comment) {
+            return [
+                'id' => $comment->id,
+                'user' => $comment->user->name,
+                'text' => $comment->text,
+            ];
+        });
+
+    $likes = $post->likes()->with('user')->get()->map(function ($like) {
+        return [
+            'user' => $like->user->name,
+        ];
+    });
+
+    return response()->json([
+        'comments' => $comments,
+        'likes' => $likes,
+    ]);
+}
+
+public function getHiddenComments($id)
+{
+    $hiddenComments = Comment::where('post_id', $id)
+        ->where('hide', 1)
+        ->with('user')
+        ->get()
+        ->map(function ($comment) {
+            return [
+                'id' => $comment->id,
+                'user' => $comment->user->name,
+                'text' => $comment->text,
+            ];
+        });
+
+    return response()->json([
+        'hiddenComments' => $hiddenComments,
+    ]);
+}
+
+public function hideComment($id)
+{
+    try {
+        $comment = Comment::findOrFail($id);
+
+        $comment->hide = 1;
+        $comment->save();
+
+        // Ambil komentar tersembunyi untuk memperbarui tabel
+        $hiddenComments = Comment::where('post_id', $comment->post_id)
+            ->where('hide', 1)
+            ->with('user')
+            ->get()
+            ->map(function ($comment) {
+                return [
+                    'id' => $comment->id,
+                    'user' => $comment->user->name,
+                    'text' => $comment->text,
+                ];
+            });
+
+        return response()->json([
+            'message' => 'Comment hidden successfully.',
+            'hiddenComments' => $hiddenComments,
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json(['message' => 'Failed to hide comment.'], 500);
+    }
+}
+
+
+
+    public function unhideComment($id)
+    {
+        try {
+            $comment = Comment::findOrFail($id);
+    
+            $comment->hide = 0;
+            $comment->save();
+    
+            // Ambil komentar yang tidak tersembunyi langsung dari database
+            $comments = Comment::where('post_id', $comment->post_id)
+                ->where('hide', 0)
+                ->with('user')
+                ->get()
+                ->map(function ($comment) {
+                    return [
+                        'id' => $comment->id,
+                        'user' => $comment->user->name,
+                        'text' => $comment->text,
+                    ];
+                });
+    
+            return response()->json([
+                'message' => 'Comment successfully unhidden.',
+                'comments' => $comments,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Failed to unhide comment.'], 500);
+        }
+    }
+    
+
+    public function getUnreadCount()
+    {
+        $userId = Auth::id();
+    
+        // Ambil ID dari semua postingan milik user
+        $userPosts = Post::where('user_id', $userId)->pluck('id');
+    
+        // Hitung jumlah komentar yang belum dilihat
+        $unreadCommentsCount = Comment::whereIn('post_id', $userPosts)
+            ->where('seen', 0)
+            ->count();
+    
+        // Hitung jumlah likes yang belum dilihat
+        $unreadLikesCount = Like::whereIn('post_id', $userPosts)
+            ->where('seen', 0)
+            ->count();
+    
+        // Totalkan jumlah notifikasi
+        $totalUnreadCount = $unreadCommentsCount + $unreadLikesCount;
+    
+        return response()->json([
+            'unread_notifications_count' => $totalUnreadCount,
+        ]);
+    }
+
 }

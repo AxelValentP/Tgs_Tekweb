@@ -31,6 +31,9 @@ Route::get('/explore', function () {
     return view('explore');
 })->name('explore');
 
+Route::get('/notification', function () {
+    return view('notification');
+})->name('notification');
 
 // Routes that require authentication
 Route::middleware(['auth'])->group(function () {
@@ -76,8 +79,16 @@ Route::post('logout', [LoginController::class, 'logout'])->name('logout')->middl
 Route::get('/posts', [PostController::class, 'fetchPosts'])->name('posts.fetch');
 Route::get('/posts/{id}/details', [PostController::class, 'getDetails']);
 
-Route::post('/posts/{postId}/comments', [CommentController::class, 'store'])->name('comments.store');
-Route::post('/posts/{postId}/comments/{parentId}/reply', [CommentController::class, 'reply'])->name('comments.reply');
+
+
+// Hidden comment homee
+Route::patch('/comments/{id}/hide', [PostController::class, 'hideComment'])->name('comments.hide');
+Route::get('/posts/{id}/hidden-comments', [PostController::class, 'getHiddenComments'])->name('posts.hidden-comments');
+Route::patch('/comments/{id}/unhide', [PostController::class, 'unhideComment'])->name('comments.unhide');
+
+
+//Notification
+Route::get('/notifications/unread-count', [PostController::class, 'getUnreadCount'])->name('notifications.unread-count');
 
 
 // Database test route (for checking DB connection)

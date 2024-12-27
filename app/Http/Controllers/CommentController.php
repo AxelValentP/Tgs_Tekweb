@@ -11,12 +11,11 @@ class CommentController extends Controller
      * Fetch all comments for a specific post.
      */
     public function fetchComments($postId)
-{
-    $comments = Comment::where('post_id', $postId)
-        ->whereNull('parent_id') // Only fetch top-level comments
-        ->with(['user', 'replies.user']) // Include replies and their authors
-        ->latest()
-        ->get();
+    {
+        $comments = Comment::where('post_id', $postId)
+            ->with('user') // Include user details
+            ->latest() // Order by newest comments first
+            ->get();
 
     return response()->json($comments);
 }

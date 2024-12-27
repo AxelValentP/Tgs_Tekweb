@@ -31,6 +31,17 @@ return new class extends Migration
                 END
             ');
         });
+
+        // Add logic to update the 'seen' column based on ownership
+        Schema::table('comments', function (Blueprint $table) {
+            DB::statement('
+                CREATE TRIGGER set_seen_default BEFORE INSERT ON comments
+                FOR EACH ROW
+                BEGIN
+                    SET NEW.seen = (SELECT posts.user_id = NEW.user_id FROM posts WHERE posts.id = NEW.post_id);
+                END
+            ');
+        });
     }
 
     public function down()
