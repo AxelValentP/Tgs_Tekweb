@@ -90,6 +90,9 @@ Route::patch('/comments/{id}/unhide', [PostController::class, 'unhideComment'])-
 //Notification
 Route::get('/notifications/unread-count', [PostController::class, 'getUnreadCount'])->name('notifications.unread-count');
 
+Route::post('/posts/{postId}/comments', [CommentController::class, 'store'])->name('comments.store');
+Route::post('/posts/{postId}/comments/{parentId}/reply', [CommentController::class, 'reply'])->name('comments.reply');
+
 
 // Database test route (for checking DB connection)
 Route::get('/db-test', function () {
