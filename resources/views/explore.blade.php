@@ -362,8 +362,10 @@
         padding: 1rem;
         display: flex;
         flex-direction: column;
-        max-height: 80vh; /* Limit the maximum height */
-        overflow: hidden; /* Ensure no overflow affects the modal layout */
+        max-height: 80vh;
+        /* Limit the maximum height */
+        overflow: hidden;
+        /* Ensure no overflow affects the modal layout */
     }
 
     .modal-header {
@@ -386,23 +388,32 @@
     }
 
     .comment-list {
-        flex: 1; /* Grow to fill available space */
+        flex: 1;
+        /* Grow to fill available space */
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
-        overflow-y: auto; /* Add vertical scrolling */
-        max-height: calc(2.5rem * 5); /* 2.5rem (approx height of one comment) * 5 = Height for 5 comments */
-        margin-bottom: 1rem; /* Space for the comment input */
-        scrollbar-width: thin; /* Modern browsers - thin scrollbar */
-        scrollbar-color: #555 #222; /* Modern browsers - custom scrollbar colors */
+        overflow-y: auto;
+        /* Add vertical scrolling */
+        max-height: calc(2.5rem * 5);
+        /* 2.5rem (approx height of one comment) * 5 = Height for 5 comments */
+        margin-bottom: 1rem;
+        /* Space for the comment input */
+        scrollbar-width: thin;
+        /* Modern browsers - thin scrollbar */
+        scrollbar-color: #555 #222;
+        /* Modern browsers - custom scrollbar colors */
     }
+
     /* Optional: Customize scrollbar for webkit browsers (Chrome, Edge, Safari) */
     .comment-list::-webkit-scrollbar {
         width: 8px;
     }
+
     .comment-list::-webkit-scrollbar-track {
         background: #222;
     }
+
     .comment-list::-webkit-scrollbar-thumb {
         background-color: #555;
         border-radius: 4px;
@@ -715,11 +726,16 @@
 
         // Function to Update Actions HTML
         function updateActionsHTML(actions, post) {
+            // Hitung komentar yang tidak di-hide
+            const visibleCommentsCount = post.comments.filter(comment => comment.hide === 0).length;
+
             actions.innerHTML = `
-            <span class="comment-btn"><i class="lni lni-comments"></i> ${post.comments.length}</span>
-            <span class="like-btn ${post.liked ? 'liked' : ''}"><i class="lni lni-heart"></i> ${post.likes_count}</span>
-        `;
+        <span class="comment-btn"><i class="lni lni-comments"></i> ${visibleCommentsCount}</span>
+        <span class="like-btn ${post.liked ? 'liked' : ''}"><i class="lni lni-heart"></i> ${post.likes_count}</span>
+    `;
         }
+
+
 
         // Function to Slide Images in the Slider
         function slideImages(slider, direction) {
@@ -775,41 +791,41 @@
 
         // Function to Show Comments in Modal
         // Show comments in modal
-    function showComments(postId) {
-        currentPostId = postId;
-        commentList.innerHTML = ''; // Clear previous comments
-        commentModal.classList.add('show');
+        function showComments(postId) {
+            currentPostId = postId;
+            commentList.innerHTML = ''; // Clear previous comments
+            commentModal.classList.add('show');
 
-        fetch(`/posts/${postId}/comments`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to fetch comments');
-                }
-                return response.json();
-            })
-            .then(comments => {
-                if (comments.length === 0) {
-                    commentList.innerHTML = '<p>No comments yet. Be the first to comment!</p>';
-                } else {
-                    comments.forEach(comment => {
-                        const commentItem = document.createElement('div');
-                        commentItem.classList.add('comment-item');
-                        commentItem.innerHTML = `
+            fetch(`/posts/${postId}/comments`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch comments');
+                    }
+                    return response.json();
+                })
+                .then(comments => {
+                    if (comments.length === 0) {
+                        commentList.innerHTML = '<p>No comments yet. Be the first to comment!</p>';
+                    } else {
+                        comments.forEach(comment => {
+                            const commentItem = document.createElement('div');
+                            commentItem.classList.add('comment-item');
+                            commentItem.innerHTML = `
                             <div class="comment-item-header">
                                 <span class="comment-user">${comment.user.name}</span>
                                 <span class="comment-time">${new Date(comment.created_at).toLocaleString()}</span>
                             </div>
                             <div class="comment-text">${comment.text}</div>
                         `;
-                        commentList.appendChild(commentItem);
-                    });
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching comments:', error);
-                commentList.innerHTML = '<p>Failed to load comments. Please try again later.</p>';
-            });
-    }
+                            commentList.appendChild(commentItem);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching comments:', error);
+                    commentList.innerHTML = '<p>Failed to load comments. Please try again later.</p>';
+                });
+        }
 
         // Function to Add a Comment
         function addComment(e) {
