@@ -96,6 +96,7 @@
     }
 
     .btn-view {
+        margin-top: 10px;
         background: #4CAF50;
         color: #fff;
         border: none;
@@ -109,45 +110,47 @@
     .btn-view:hover {
         background: #45a049;
     }
+
+    
 </style>
 
 <div class="content-wrapper">
     <div class="notifications-header">
         <h2>Notifications</h2>
         <p>Stay updated with the latest interactions on your posts.</p>
+        <button id="clearNotificationsBtn" class="btn-view">Clear Notifications</button>
     </div>
 
     <div class="notifications-table-container">
-        <!-- Replace this data with dynamic data later -->
         <table>
             <thead>
                 <tr>
                     <th>#</th>
                     <th>Message</th>
                     <th>Time</th>
-                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
-                <!-- Example row 1 -->
-                <tr class="notification-row" data-post-id="123">
-                    <td>1</td>
-                    <td><strong>John Doe</strong> liked your post.</td>
-                    <td>5 minutes ago</td>
-                    <td>
-                        <button class="btn-view" data-post-id="123">View Post</button>
-                    </td>
+                @php $index = 1; @endphp
+                @foreach ($likes as $like)
+                <tr>
+                    <td>{{ $index++ }}</td>
+                    <td><strong>{{ $like->user_name }}</strong> liked your post.</td>
+                    <td>{{ \Carbon\Carbon::parse($like->created_at)->diffForHumans() }}</td>
                 </tr>
-                <!-- Example row 2 -->
-                <tr class="notification-row" data-post-id="124">
-                    <td>2</td>
-                    <td><strong>Jane Smith</strong> commented: <span>"Nice post!"</span></td>
-                    <td>10 minutes ago</td>
-                    <td>
-                        <button class="btn-view" data-post-id="124">View Post</button>
-                    </td>
+                @endforeach
+                @foreach ($comments as $comment)
+                <tr>
+                    <td>{{ $index++ }}</td>
+                    <td><strong>{{ $comment->user_name }}</strong> commented: <span>"{{ $comment->comment_text }}"</span></td>
+                    <td>{{ \Carbon\Carbon::parse($comment->created_at)->diffForHumans() }}</td>
                 </tr>
-                <!-- Add more rows dynamically later -->
+                @endforeach
+                @if ($likes->isEmpty() && $comments->isEmpty())
+                <tr>
+                    <td colspan="3" class="empty-message">No new notifications</td>
+                </tr>
+                @endif
             </tbody>
         </table>
     </div>
@@ -155,16 +158,33 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // Handle row or button click
-        document.querySelectorAll('.notification-row, .btn-view').forEach(element => {
-            element.addEventListener('click', (e) => {
-                const postId = e.target.dataset.postId || e.currentTarget.dataset.postId;
-                if (postId) {
-                    // Redirect to homee page with the selected post
-                    window.location.href = `/homee?post_id=${postId}`;
+        // Handle clear notifications click
+        const clearNotificationsBtn = document.getElementById('clearNotificationsBtn');
+        clearNotificationsBtn.addEventListener('click', () => {
+            fetch('/clear-notifications', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Notifications cleared successfully.');
+                    location.reload(); // Reload the page to update the UI
+                } else {
+                    alert('Failed to clear notifications. Please try again.');
                 }
+            })
+            .catch(error => {
+                console.error('Error clearing notifications:', error);
+                alert('An error occurred. Please try again.');
             });
         });
     });
 </script>
+>
+
+
 @endsection

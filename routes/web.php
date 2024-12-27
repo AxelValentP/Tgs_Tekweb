@@ -10,6 +10,8 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\TopicController;
 use App\Http\Controllers\ExploreController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\NotificationController;
+use Illuminate\Notifications\Notification;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,9 +33,9 @@ Route::get('/explore', function () {
     return view('explore');
 })->name('explore');
 
-Route::get('/notification', function () {
-    return view('notification');
-})->name('notification');
+// Route::get('/notification', function () {
+//     return view('notification');
+// })->name('notification');
 
 // Routes that require authentication
 Route::middleware(['auth'])->group(function () {
@@ -89,6 +91,8 @@ Route::patch('/comments/{id}/unhide', [PostController::class, 'unhideComment'])-
 
 //Notification
 Route::get('/notifications/unread-count', [PostController::class, 'getUnreadCount'])->name('notifications.unread-count');
+Route::get('/notification', [NotificationController::class, 'getNotifications'])->name('notification');
+Route::post('/clear-notifications', [NotificationController::class, 'clearNotifications'])->name('clear.notifications');
 
 
 //Update status public private
