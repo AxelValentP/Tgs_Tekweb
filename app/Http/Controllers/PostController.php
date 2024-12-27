@@ -21,7 +21,9 @@ class PostController extends Controller
     public function create()
     {
         // Fetch latest posts with relations for display (optional)
-        $posts = Post::with(['user', 'topics', 'images', 'likes', 'comments.user'])->latest()->get();
+        $posts = Post::with(['user', 'topics', 'images', 'likes', 'comments' => function ($query) {
+            $query->where('hide', false);
+        }])->latest()->get();
         return view('upload', compact('posts'));
     }
 
@@ -185,17 +187,32 @@ class PostController extends Controller
 
         // Apply sorting based on the request
         switch ($sort) {
+            case 'newest':
+                $posts = Post::with(['user', 'images', 'comments' => function ($query) {
+                    $query->where('hide', false); // Fetch only non-hidden comments
+                }])
+                    ->orderBy('created_at', 'desc');
+                break;
+
             case 'popular':
-                $query->orderBy('likes_count', 'desc');
+                $posts = Post::with(['user', 'images', 'comments' => function ($query) {
+                    $query->where('hide', false); // Fetch only non-hidden comments
+                }])
+                    ->orderBy('likes_count', 'desc');
                 break;
 
             case 'oldest':
-                $query->orderBy('created_at', 'asc');
+                $posts = Post::with(['user', 'images', 'comments' => function ($query) {
+                    $query->where('hide', false); // Fetch only non-hidden comments
+                }])
+                    ->orderBy('created_at', 'asc');
                 break;
 
-            case 'newest':
             default:
-                $query->orderBy('created_at', 'desc');
+                $posts = Post::with(['user', 'images', 'comments' => function ($query) {
+                    $query->where('hide', false); // Fetch only non-hidden comments
+                }])
+                    ->orderBy('created_at', 'desc');
                 break;
         }
 
