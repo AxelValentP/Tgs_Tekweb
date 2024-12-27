@@ -8,34 +8,44 @@ use Illuminate\Support\Facades\DB;
 return new class extends Migration
 {
     public function up()
-{
-    Schema::table('likes', function (Blueprint $table) {
-        $table->boolean('seen')->default(false)->after('user_id');
-    });
+    {
+        // Tambahkan kolom 'seen' ke tabel 'likes'
+        Schema::table('likes', function (Blueprint $table) {
+            if (!Schema::hasColumn('likes', 'seen')) {
+                $table->boolean('seen')->default(false); // Default false
+            }
+        });
 
-    DB::statement('
-        CREATE TRIGGER set_like_seen_default BEFORE INSERT ON likes
-        FOR EACH ROW
-        BEGIN
-            SET NEW.seen = (SELECT posts.user_id = NEW.user_id FROM posts WHERE posts.id = NEW.post_id);
-        END
-    ');
+        // Buat trigger untuk mengatur nilai default 'seen'
+        DB::unprepared('
+            CREATE TRIGGER set_like_seen_default BEFORE INSERT ON likes
+            FOR EACH ROW
+            BEGIN
+                DECLARE is_post_owner BOOLEAN;
+                SELECT (posts.user_id = NEW.user_id) INTO is_post_owner 
+                FROM posts WHERE posts.id = NEW.post_id;
+                SET NEW.seen = is_post_owner;
+            END
+        ');
 
-    // Update existing rows
-    DB::table('likes')
-        ->join('posts', 'likes.post_id', '=', 'posts.id')
-        ->update([
-            'seen' => DB::raw('likes.user_id = posts.user_id')
-        ]);
-}
-
+        // Perbarui baris yang sudah ada
+        DB::statement('
+            UPDATE likes 
+            INNER JOIN posts ON likes.post_id = posts.id
+            SET likes.seen = (likes.user_id = posts.user_id)
+        ');
+    }
 
     public function down()
     {
-        // Menghapus trigger dan kolom 'seen'
-        DB::statement('DROP TRIGGER IF EXISTS set_like_seen_default');
+        // Hapus trigger
+        DB::unprepared('DROP TRIGGER IF EXISTS set_like_seen_default');
+
+        // Hapus kolom 'seen'
         Schema::table('likes', function (Blueprint $table) {
-            $table->dropColumn('seen');
+            if (Schema::hasColumn('likes', 'seen')) {
+                $table->dropColumn('seen');
+            }
         });
     }
 };
