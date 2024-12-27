@@ -653,6 +653,7 @@
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
+                    console.log('Topics Data:', data); // Debug: Log data topics ke console
                     data.data.forEach(topic => {
                         const a = document.createElement('a');
                         a.href = "#";
@@ -692,6 +693,7 @@
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
+                    console.log('Users Data:', data); // Debug: Log data users ke console
                     data.data.forEach(user => {
                         const a = document.createElement('a');
                         a.href = "#";
@@ -873,6 +875,7 @@
             // Event Listeners for Actions
             const commentBtn = actions.querySelector('.comment-btn');
             commentBtn.addEventListener('click', () => {
+                console.log('Comment button clicked for post ID:', post.id);
                 currentPostId = post.id;
                 showComments(post.id);
                 commentModal.classList.add('show');
@@ -948,6 +951,7 @@
 
         // **Function to Show Comments in Modal**
         function showComments(postId) {
+            console.log('Fetching comments for post ID:', postId);
             currentPostId = postId;
             commentList.innerHTML = ''; // Clear previous comments
             commentModal.classList.add('show');

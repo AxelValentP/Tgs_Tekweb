@@ -27,6 +27,12 @@ Route::get('/', function () {
     return view('home');
 });
 
+//Topics
+Route::get('/topics', [TopicController::class, 'getTopics']);
+Route::get('/topics/search', [TopicController::class, 'search']);
+Route::get('/users', [TopicController::class, 'getUsers']);
+
+
 Route::get('/explore', function () {
     return view('explore');
 })->name('explore');
@@ -57,19 +63,19 @@ Route::middleware(['auth'])->group(function () {
 
     // Edit Post Caption via AJAX
     Route::patch('/posts/{post}/edit', [PostController::class, 'editCaption'])->name('posts.editCaption');
-    
+
     // Delete Post via AJAX
     Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
     Route::get('/posts/{postId}/comments', [CommentController::class, 'fetchComments'])->name('comments.fetch');
 });
 
 // Login & Logout Routes
-Route::middleware('guest')->group(function() {
+Route::middleware('guest')->group(function () {
     Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('login', [LoginController::class, 'login']);
 
     // Signup Route
-    Route::get('/signup', [SignupController::class, 'showSignup'])->name('signup'); 
+    Route::get('/signup', [SignupController::class, 'showSignup'])->name('signup');
     Route::post('/signup', [SignupController::class, 'processSignup'])->name('signup.post');
 });
 

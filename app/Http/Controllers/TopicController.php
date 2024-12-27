@@ -57,6 +57,7 @@ class TopicController extends Controller
             'data' => $topics,
             'current_page' => $page,
             'last_page' => $last_page,
+            'message' => $topics->isEmpty() ? 'No topics found.' : null,
         ]);
     }
 
@@ -90,6 +91,7 @@ class TopicController extends Controller
             'data' => $users,
             'current_page' => $page,
             'last_page' => $last_page,
+            'message' => $users->isEmpty() ? 'No users found.' : null,
         ]);
     }
 }
