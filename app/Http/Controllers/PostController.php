@@ -10,6 +10,8 @@ use App\Models\Image;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Comment;
+use App\Models\Like;
 
 class PostController extends Controller
 {
@@ -28,18 +30,28 @@ class PostController extends Controller
      */
     public function store(StorePostRequest $request)
     {
+       
+
+        // Validate the request data (optional if StorePostRequest already validates it)
+        $validated = $request->validate([
+            'description' => 'required|string|max:255',
+            'status' => 'required|in:public,private',
+            'topic' => 'nullable|string|max:255',
+            'image_links.*' => 'nullable|url',
+        ]);
+    
         // Step 1: Create the post
         $post = Post::create([
             'user_id' => auth()->id(),
             'description' => $request->description,
+            'status' => $request->status === 'public' ? 1 : 0, // Map public/private to 1/0
             'likes_count' => 0, // Initialize likes_count
         ]);
-
+    
         // Step 2: Handle topics
         $topicIds = [];
-
+    
         if (!empty($request->topic)) {
-            // Assuming only one topic based on your form input
             $topicName = trim($request->topic);
             if ($topicName !== '') {
                 $topic = Topic::firstOrCreate(
@@ -49,12 +61,12 @@ class PostController extends Controller
                 $topicIds[] = $topic->id;
             }
         }
-
+    
         // Attach topics to the post
         if (!empty($topicIds)) {
             $post->topics()->sync($topicIds);
         }
-
+    
         // Step 3: Handle images
         if (!empty($request->image_links)) {
             foreach ($request->image_links as $imageLink) {
@@ -64,9 +76,12 @@ class PostController extends Controller
                 ]);
             }
         }
-
+    
+        // Redirect back with success message
         return redirect()->route('upload')->with('success', 'Post created successfully!');
     }
+    
+    
 
     /**
      * Like or unlike a post.
@@ -192,29 +207,154 @@ class PostController extends Controller
         return response()->json($posts);
     }
 
-    // PostController.php
-    public function getPosts(Request $request)
-    {
-        $query = Post::query();
+    public function getDetails($id)
+{
+    $post = Post::findOrFail($id);
 
-        // Filter by topic if topic_id is provided
-        if ($request->has('topic_id')) {
-            $query->whereHas('topics', function ($q) use ($request) {
-                $q->where('id', $request->input('topic_id'));
+    // Query directly from the database
+    $comments = Comment::where('post_id', $id)
+        ->where('hide', 0)
+        ->with('user')
+        ->get()
+        ->map(function ($comment) {
+            return [
+                'id' => $comment->id,
+                'user' => $comment->user->name,
+                'text' => $comment->text,
+            ];
+        });
+
+    $likes = $post->likes()->with('user')->get()->map(function ($like) {
+        return [
+            'user' => $like->user->name,
+        ];
+    });
+
+    return response()->json([
+        'comments' => $comments,
+        'likes' => $likes,
+    ]);
+}
+
+public function getHiddenComments($id)
+{
+    $hiddenComments = Comment::where('post_id', $id)
+        ->where('hide', 1)
+        ->with('user')
+        ->get()
+        ->map(function ($comment) {
+            return [
+                'id' => $comment->id,
+                'user' => $comment->user->name,
+                'text' => $comment->text,
+            ];
+        });
+
+    return response()->json([
+        'hiddenComments' => $hiddenComments,
+    ]);
+}
+
+public function hideComment($id)
+{
+    try {
+        $comment = Comment::findOrFail($id);
+
+        $comment->hide = 1;
+        $comment->save();
+
+        // Ambil komentar tersembunyi untuk memperbarui tabel
+        $hiddenComments = Comment::where('post_id', $comment->post_id)
+            ->where('hide', 1)
+            ->with('user')
+            ->get()
+            ->map(function ($comment) {
+                return [
+                    'id' => $comment->id,
+                    'user' => $comment->user->name,
+                    'text' => $comment->text,
+                ];
             });
-        }
 
-        // Apply sorting
-        if ($request->input('sort') === 'oldest') {
-            $query->orderBy('created_at', 'asc');
-        } elseif ($request->input('sort') === 'popular') {
-            $query->orderBy('likes_count', 'desc'); // Assuming `likes_count` exists
-        } else {
-            $query->orderBy('created_at', 'desc'); // Default: newest
-        }
-
-        $posts = $query->paginate(10); // Pagination to control results
-
-        return response()->json($posts);
+        return response()->json([
+            'message' => 'Comment hidden successfully.',
+            'hiddenComments' => $hiddenComments,
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json(['message' => 'Failed to hide comment.'], 500);
     }
+}
+
+
+
+    public function unhideComment($id)
+    {
+        try {
+            $comment = Comment::findOrFail($id);
+    
+            $comment->hide = 0;
+            $comment->save();
+    
+            // Ambil komentar yang tidak tersembunyi langsung dari database
+            $comments = Comment::where('post_id', $comment->post_id)
+                ->where('hide', 0)
+                ->with('user')
+                ->get()
+                ->map(function ($comment) {
+                    return [
+                        'id' => $comment->id,
+                        'user' => $comment->user->name,
+                        'text' => $comment->text,
+                    ];
+                });
+    
+            return response()->json([
+                'message' => 'Comment successfully unhidden.',
+                'comments' => $comments,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Failed to unhide comment.'], 500);
+        }
+    }
+    
+
+    public function getUnreadCount()
+    {
+        $userId = Auth::id();
+    
+        // Ambil ID dari semua postingan milik user
+        $userPosts = Post::where('user_id', $userId)->pluck('id');
+    
+        // Hitung jumlah komentar yang belum dilihat
+        $unreadCommentsCount = Comment::whereIn('post_id', $userPosts)
+            ->where('seen', 0)
+            ->count();
+    
+        // Hitung jumlah likes yang belum dilihat
+        $unreadLikesCount = Like::whereIn('post_id', $userPosts)
+            ->where('seen', 0)
+            ->count();
+    
+        // Totalkan jumlah notifikasi
+        $totalUnreadCount = $unreadCommentsCount + $unreadLikesCount;
+    
+        return response()->json([
+            'unread_notifications_count' => $totalUnreadCount,
+        ]);
+    }
+
+    public function toggleStatus(Post $post, Request $request)
+{
+    // Toggle status
+    $post->status = $post->status === 1 ? 0 : 1;
+    $post->save();
+
+    // Return response
+    return response()->json([
+        'status' => $post->status,
+        'message' => 'Post status updated successfully!',
+    ]);
+}
+
+
 }

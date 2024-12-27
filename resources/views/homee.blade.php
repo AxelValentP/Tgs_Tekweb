@@ -2,7 +2,6 @@
 
 @section('content')
 <style>
-    /* Existing CSS */
     html, body {
         margin: 0;
         padding: 0;
@@ -16,34 +15,32 @@
     .content-wrapper {
         display: flex;
         width: 100%;
-        min-height: 100vh; 
-        box-sizing: border-box;
-        background: #111; 
-    }
-
-    .main-content {
-        flex: 1;
-        
+        min-height: 100vh;
         box-sizing: border-box;
         background: #111;
     }
 
-    /* Responsive Layout for Posts */
+    .main-content {
+        flex: 1;
+        box-sizing: border-box;
+        background: #111;
+    }
+
     #userPostsContainer {
         display: grid;
         gap: 2rem;
-        grid-template-columns: 1fr; /* Default 1 column */
+        grid-template-columns: 1fr;
     }
 
     @media (min-width: 768px) {
         #userPostsContainer {
-            grid-template-columns: repeat(2, 1fr); /* ≥768px: 2 columns */
+            grid-template-columns: repeat(2, 1fr);
         }
     }
 
     @media (min-width: 1024px) {
         #userPostsContainer {
-            grid-template-columns: repeat(3, 1fr); /* ≥1024px: 3 columns */
+            grid-template-columns: repeat(3, 1fr);
         }
     }
 
@@ -52,7 +49,6 @@
         border-radius: 8px;
         overflow: hidden;
         border: 1px solid #333;
-        position: relative;
         display: flex;
         flex-direction: column;
     }
@@ -79,13 +75,13 @@
         cursor: pointer;
     }
 
-    /* Updated CSS for maintaining aspect ratio */
     .post-image {
         position: relative;
         width: 100%;
-        padding-top: 100%; /* 1:1 Aspect Ratio (persegi) */
+        padding-top: 100%;
         overflow: hidden;
-        background: #999; /* Warna latar belakang untuk placeholder */
+        background: #999;
+        cursor: pointer; /* Menambahkan pointer untuk gambar */
     }
 
     .post-image img, .post-image .no-image {
@@ -117,13 +113,13 @@
         color: #ccc;
         margin-bottom: 0.5rem;
         word-wrap: break-word;
-        font-size:0.9rem;
+        font-size: 0.9rem;
     }
 
     .post-footer .description .edited {
-        color:#888;
-        font-size:0.8rem;
-        margin-left:0.3rem;
+        color: #888;
+        font-size: 0.8rem;
+        margin-left: 0.3rem;
     }
 
     .post-footer .actions {
@@ -132,29 +128,31 @@
         justify-content: flex-end;
         color: #ccc;
         font-size: 0.9rem;
-        gap:0.5rem;
+        gap: 0.5rem;
     }
 
     .actions button {
-        background:#444;
-        color:#ccc;
-        border:none;
-        padding:0.3rem 0.5rem;
-        border-radius:4px;
-        cursor:pointer;
-        font-size:0.8rem;
+        background: #444;
+        color: #ccc;
+        border: none;
+        padding: 0.3rem 0.5rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.8rem;
     }
 
     .actions button:hover {
-        background:#555;
+        background: #555;
     }
 
-    /* Modal without internal scroll */
     .modal-overlay {
         display: none;
         position: fixed;
-        top:0; left:0; right:0; bottom:0;
-        background: rgba(0,0,0,0.7);
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
         z-index: 9999;
         justify-content: center;
         align-items: center;
@@ -168,66 +166,265 @@
         background: #222;
         border: 1px solid #333;
         border-radius: 8px;
-        width: 100%;
-        max-width: 400px;
+        width: 90%;
+        max-width: 900px;
         padding: 1rem;
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
+        color: #ccc;
+        gap: 1rem;
     }
 
-    .modal-header {
+    .modal-image {
+        flex: 2;
+        background: #333;
         display: flex;
-        justify-content: space-between;
+        justify-content: center;
         align-items: center;
-        margin-bottom: 1rem;
     }
 
-    .modal-header h3 {
+    .modal-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    .modal-details {
+        flex: 3;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .comments-container,
+    .likes-container {
+        max-height: 120px;
+        overflow-y: auto;
+        padding: 0.5rem;
+        border: 1px solid #333;
+        border-radius: 4px;
+        background: #111;
+        margin-top: 1rem;
+    }
+
+    .comments-container table {
+        width: 100%;
+        border-collapse: collapse;
+        color: #ccc;
+    }
+
+    .comments-container th, .comments-container td {
+        border: 1px solid #444;
+        padding: 0.5rem;
+        text-align: left;
+        vertical-align: top;
+    }
+
+    .likes-container ul {
+        list-style: none;
+        padding: 0;
         margin: 0;
-        font-size: 1.1rem;
-        color: #ccc;
     }
 
-    .modal-header .close-btn {
-        cursor: pointer;
+    .likes-container li {
+        margin-bottom: 0.5rem;
+    }
+
+    .hide-comment-btn {
+        background: #444;
         color: #ccc;
+        border: none;
+        padding: 0.3rem 0.5rem;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .hide-comment-btn:hover {
+        background: #555;
+    }
+
+    @media (max-width: 768px) {
+        .modal {
+            flex-direction: column;
+        }
+    }
+
+    #editModal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+
+#editModal.show {
+    display: flex;
+}
+
+#editModal .modal {
+    background: #222;
+    border: 1px solid #333;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    color: #ccc;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+#editModal .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #444;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+#editModal .modal-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #fff;
+}
+
+#editModal .close-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: #888;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+#editModal .close-btn:hover {
+    color: #fff;
+}
+
+#editModal .modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+#editModal .modal-body textarea {
+    width: 100%;
+    height: 120px;
+    background: #333;
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 0.8rem;
+    color: #ccc;
+    font-size: 1rem;
+    resize: none;
+    box-sizing: border-box;
+}
+
+#editModal .modal-body textarea:focus {
+    outline: none;
+    border-color: #555;
+    background: #444;
+}
+
+#editModal .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+#editModal .modal-actions button {
+    background: #444;
+    color: #ccc;
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+#editModal .modal-actions button:hover {
+    background: #555;
+    color: #fff;
+}
+
+#editModal .modal-actions #saveEditBtn {
+    background: #4CAF50;
+    color: #fff;
+}
+
+#editModal .modal-actions #saveEditBtn:hover {
+    background: #45a049;
+}
+
+#editModal .modal-actions #cancelEditBtn {
+    background: #800;
+    color: #fff;
+}
+
+#editModal .modal-actions #cancelEditBtn:hover {
+    background: #900;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+#hiddenCommentsPanel {
+    max-height: 200px; /* Atur tinggi maksimal */
+    overflow-y: auto; /* Aktifkan scroll vertikal jika konten lebih tinggi */
+    transition: max-height 0.3s ease-out;
+    margin-top: 0.5rem;
+    background: #222;
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 0.5rem;
+}
+.status-badge {
+        display: inline-block;
+        padding: 0.3rem 0.6rem;
+        font-size: 0.8rem;
+        font-weight: bold;
+        border-radius: 4px;
+        text-transform: uppercase;
+        margin-left: 10px;
+    }
+
+    .status-public {
+        background-color: #28a745;
+        color: #fff;
+    }
+
+    .status-private {
+        background-color: #dc3545;
+        color: #fff;
+    }
+
+    .menu-btn {
+        color: #ccc;
+        cursor: pointer;
         font-size: 1.5rem;
     }
 
-    .modal-body {
-        margin-bottom:1rem;
+    .menu-btn:hover {
+        color: #fff;
     }
 
-    .modal-body textarea {
-        width:100%;
-        background:#333;
-        border:1px solid #444;
-        border-radius:4px;
-        color:#ccc;
-        padding:0.5rem;
-        resize:vertical;
-        min-height:100px;
-    }
-
-    .modal-actions {
-        display:flex;
-        justify-content:flex-end;
-        gap:0.5rem;
-    }
-
-    .modal-actions button {
-        background:#444;
-        color:#ccc;
-        border:none;
-        padding:0.5rem 1rem;
-        border-radius:4px;
-        cursor:pointer;
-        font-size:0.9rem;
-    }
-
-    .modal-actions button:hover {
-        background:#555;
-    }
 </style>
 
 <div class="content-wrapper">
@@ -236,18 +433,27 @@
         <div id="userPostsContainer">
             @forelse($posts as $post)
                 <div class="post-card" data-post-id="{{ $post->id }}">
-                    <div class="post-header">
-                        <div class="username">{{ $post->user->name }}</div>
-                        <div class="time">{{ $post->created_at->diffForHumans() }}</div>
-                        <div class="menu-btn">⋮</div>
-                    </div>
+                <div class="post-header">
+    <div class="username">{{ $post->user->name }}</div>
+    <div class="time">{{ $post->created_at->diffForHumans() }}</div>
+
+    <!-- Status Indicator -->
+    <div class="status-indicator" style="margin-right: 10px;">
+        <span
+            class="status-badge {{ $post->status == 1 ? 'status-public' : 'status-private' }}"
+            data-post-id="{{ $post->id }}"
+            style="cursor: pointer;"
+        >
+            {{ $post->status == 1 ? 'Public' : 'Private' }}
+        </span>
+    </div>
+
+</div>
                     <div class="post-image">
                         @if($post->images->count() > 0)
-                            <img src="{{ $post->images->first()->path }}" alt="Post Image">
+                            <img src="{{ $post->images->first()->path }}" alt="Post Image" class="image-modal-trigger">
                         @else
-                            <div class="no-image">
-                                No Image
-                            </div>
+                            <div class="no-image image-modal-trigger">No Image</div>
                         @endif
                     </div>
                     <div class="post-footer">
@@ -269,13 +475,12 @@
         </div>
     </div>
 </div>
-
 <!-- Edit Modal -->
 <div class="modal-overlay" id="editModal">
     <div class="modal">
         <div class="modal-header">
             <h3>Edit Post</h3>
-            <div class="close-btn" id="closeModalBtn">&times;</div>
+            <div class="close-btn" id="closeModalBtn"></div>
         </div>
         <div class="modal-body">
             <textarea id="editCaption" placeholder="Edit your caption..."></textarea>
@@ -405,4 +610,301 @@
         });
     });
 </script>
+
+<div class="modal-overlay" id="postModalOverlay" data-post-id="">
+    <div class="modal">
+        <div class="modal-image" id="postModalImage">
+            <img src="" alt="Post Image" id="postImage" style="width: 100%; height: auto; object-fit: contain;">
+        </div>
+        <div class="modal-details">
+            <div>
+                <button id="closePostModal" style="background:#800; color:#fff; border:none; padding:0.5rem; border-radius:4px; cursor:pointer;">Close</button>
+            </div>
+            <div class="comments-container">
+                <h4>Comments</h4>
+                <table>
+                    <tbody id="commentsList"></tbody>
+                </table>
+            </div>
+            <div class="likes-container">
+                <h4>Likes</h4>
+                <ul id="likesList"></ul>
+            </div>
+
+            <!-- Hidden Comments Accordion -->
+            <button class="accordion" id="hiddenCommentsAccordionToggle" style="background: #444; color: #ccc; padding: 0.5rem; border: none; border-radius: 4px; cursor: pointer; margin-top: 1rem;">Hidden Comments</button>
+            <div class="panel" id="hiddenCommentsPanel" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; margin-top: 0.5rem; background: #222; border: 1px solid #333; border-radius: 4px; padding: 0.5rem;">
+                <table style="width: 100%; border-collapse: collapse; color: #ccc;">
+                    <thead>
+                        <tr>
+                            <th style="border: 1px solid #444; padding: 0.5rem;">User</th>
+                            <th style="border: 1px solid #444; padding: 0.5rem;">Comment</th>
+                            <th style="border: 1px solid #444; padding: 0.5rem;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="hiddenCommentsList"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<script>
+ document.addEventListener('DOMContentLoaded', () => {
+    const modalOverlay = document.getElementById('postModalOverlay');
+    const modalImage = document.getElementById('postImage');
+    const commentsList = document.getElementById('commentsList');
+    const likesList = document.getElementById('likesList');
+    const closePostModal = document.getElementById('closePostModal');
+    const hiddenCommentsPanel = document.getElementById('hiddenCommentsPanel');
+    const hiddenCommentsAccordionToggle = document.getElementById('hiddenCommentsAccordionToggle');
+    const hiddenCommentsList = document.getElementById('hiddenCommentsList');
+
+    // Fetch and render hidden comments
+    const fetchHiddenComments = (postId) => {
+        fetch(`/posts/${postId}/hidden-comments`)
+            .then(res => res.json())
+            .then(data => {
+                hiddenCommentsList.innerHTML = '';
+                if (data.hiddenComments.length > 0) {
+                    data.hiddenComments.forEach(hiddenComment => {
+                        hiddenCommentsList.innerHTML += `
+                            <tr>
+                                <td>${hiddenComment.user}</td>
+                                <td>${hiddenComment.text}</td>
+                                <td>
+                                    <button class="unhide-comment-btn" data-id="${hiddenComment.id}" style="background: #4CAF50; color: #fff; padding: 0.3rem 0.5rem; border-radius: 4px; cursor: pointer;">Unhide</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    attachUnhideEvents(); // Attach events to unhide buttons
+                } else {
+                    hiddenCommentsList.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#888;">You haven\'t hidden any comments yet.</td></tr>';
+                }
+            })
+            .catch(error => console.error('Error fetching hidden comments:', error));
+    };
+
+    // Attach unhide button events
+    const attachUnhideEvents = () => {
+        document.querySelectorAll('.unhide-comment-btn').forEach(button => {
+            button.removeEventListener('click', unhideCommentHandler); // Remove old event
+            button.addEventListener('click', unhideCommentHandler); // Attach new event
+        });
+    };
+
+    const unhideCommentHandler = (e) => {
+    const commentId = e.target.getAttribute('data-id');
+    const postId = modalOverlay.getAttribute('data-post-id');
+
+    fetch(`/comments/${commentId}/unhide`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        }
+    })
+        .then(res => res.json())
+        .then(data => {
+            if (data.comments && data.comments.length > 0) {
+                // Update comments list dynamically
+                commentsList.innerHTML = '';
+                data.comments.forEach(comment => {
+                    commentsList.innerHTML += `
+                        <tr>
+                            <td>${comment.user}</td>
+                            <td>${comment.text}</td>
+                            <td><button class="hide-comment-btn" data-id="${comment.id}">Hide</button></td>
+                        </tr>
+                    `;
+                });
+
+                // Bind hide button events
+                attachHideButtonEvents();
+            } else {
+                // Jika tidak ada komentar yang tidak tersembunyi
+                commentsList.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#888;">No visible comments available.</td></tr>';
+            }
+
+            // Remove unhidden comment from hidden comments table
+            e.target.closest('tr').remove();
+
+            // Jika tidak ada komentar tersembunyi
+            if (hiddenCommentsList.children.length === 0) {
+                hiddenCommentsList.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#888;">No hidden comments available.</td></tr>';
+            }
+        })
+        .catch(error => console.error('Error unhiding comment:', error));
+};
+
+
+    // Attach hide button events
+    const attachHideButtonEvents = () => {
+    document.querySelectorAll('.hide-comment-btn').forEach(button => {
+        button.removeEventListener('click', hideCommentHandler); // Remove old handler
+        button.addEventListener('click', hideCommentHandler); // Attach new handler
+    });
+};
+const hideCommentHandler = (e) => {
+    const commentId = e.target.getAttribute('data-id');
+    const postId = modalOverlay.getAttribute('data-post-id');
+
+    fetch(`/comments/${commentId}/hide`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        }
+    })
+        .then(res => res.json())
+        .then(data => {
+            if (data.hiddenComments && data.hiddenComments.length > 0) {
+                // Hapus komentar dari kolom komentar tidak tersembunyi
+                e.target.closest('tr').remove();
+
+                // Update kolom komentar tersembunyi
+                hiddenCommentsList.innerHTML = '';
+                data.hiddenComments.forEach(comment => {
+                    hiddenCommentsList.innerHTML += `
+                        <tr>
+                            <td>${comment.user}</td>
+                            <td>${comment.text}</td>
+                            <td>
+                                <button class="unhide-comment-btn" data-id="${comment.id}" style="background: #4CAF50; color: #fff; padding: 0.3rem 0.5rem; border-radius: 4px; cursor: pointer;">Unhide</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                // Re-bind event untuk tombol unhide
+                attachUnhideEvents();
+            } else {
+                // Jika tidak ada komentar tersembunyi, tampilkan pesan
+                hiddenCommentsList.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#888;">No hidden comments available.</td></tr>';
+            }
+
+            // Jika kolom komentar tidak tersembunyi kosong
+            if (!commentsList.children.length) {
+                commentsList.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#888;">No visible comments available.</td></tr>';
+            }
+        })
+        .catch(error => console.error('Error hiding comment:', error));
+};
+
+
+    // Accordion toggle logic
+    hiddenCommentsAccordionToggle.addEventListener('click', () => {
+        const isOpen = hiddenCommentsPanel.style.maxHeight && hiddenCommentsPanel.style.maxHeight !== '0px';
+        hiddenCommentsPanel.style.maxHeight = isOpen ? '0px' : `${hiddenCommentsPanel.scrollHeight}px`;
+    });
+
+    // Fetch post details
+    const fetchPostDetails = (postId, imageSrc) => {
+        modalImage.src = imageSrc;
+        fetch(`/posts/${postId}/details`)
+            .then(res => res.json())
+            .then(data => {
+                // Render comments
+                commentsList.innerHTML = '';
+                if (data.comments.length > 0) {
+                    data.comments.forEach(comment => {
+                        commentsList.innerHTML += `
+                            <tr>
+                                <td>${comment.user}</td>
+                                <td>${comment.text}</td>
+                                <td><button class="hide-comment-btn" data-id="${comment.id}">Hide</button></td>
+                            </tr>
+                        `;
+                    });
+                    attachHideButtonEvents(); // Bind hide events
+                } else {
+                    commentsList.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#888;">No comments available.</td></tr>';
+                }
+
+                // Render likes
+                likesList.innerHTML = '';
+                if (data.likes.length > 0) {
+                    data.likes.forEach(like => {
+                        likesList.innerHTML += `<li>${like.user}</li>`;
+                    });
+                } else {
+                    likesList.innerHTML = '<li style="text-align:center; color:#888;">No likes available.</li>';
+                }
+
+                // Fetch hidden comments
+                fetchHiddenComments(postId);
+            })
+            .catch(error => console.error('Error fetching post details:', error));
+    };
+
+    // Open modal
+    document.querySelectorAll('.image-modal-trigger').forEach(image => {
+        image.addEventListener('click', (e) => {
+            const card = image.closest('.post-card');
+            const postId = card.getAttribute('data-post-id');
+            const imageSrc = image.src;
+
+            modalOverlay.setAttribute('data-post-id', postId);
+            fetchPostDetails(postId, imageSrc);
+            modalOverlay.classList.add('show');
+        });
+    });
+
+    // Close modal
+    closePostModal.addEventListener('click', () => {
+        modalOverlay.classList.remove('show');
+    });
+});
+
+</script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Attach click event to status badges
+    document.querySelectorAll('.status-badge').forEach((badge) => {
+        badge.addEventListener('click', (e) => {
+            const postId = badge.getAttribute('data-post-id');
+            const currentStatus = badge.textContent.trim().toLowerCase(); // Get current status
+
+            // Confirm action
+            const confirmation = confirm(`Do you want to make this post ${currentStatus === 'public' ? 'private' : 'public'}?`);
+            if (!confirmation) return;
+
+            // Send AJAX request to update the status
+            fetch(`/posts/${postId}/toggle-status`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                },
+                body: JSON.stringify({ status: currentStatus === 'public' ? 'private' : 'public' }),
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Failed to update status');
+                }
+            })
+            .then(data => {
+                // Update the badge
+                badge.textContent = data.status === 1 ? 'Public' : 'Private';
+                badge.classList.toggle('status-public', data.status === 1);
+                badge.classList.toggle('status-private', data.status === 0);
+            })
+            .catch(error => {
+                console.error('Error updating status:', error);
+                alert('An error occurred while updating the status.');
+            });
+        });
+    });
+});
+</script>
+
 @endsection

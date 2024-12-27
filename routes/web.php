@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LoginController;
-use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\SignupController;
 use Illuminate\Support\Facades\DB;
@@ -28,13 +27,19 @@ Route::get('/', function () {
     return view('home');
 });
 
-// Explore Page (accessible to all)
 Route::get('/explore', function () {
     return view('explore');
 })->name('explore');
 
+Route::get('/notification', function () {
+    return view('notification');
+})->name('notification');
+
 // Routes that require authentication
 Route::middleware(['auth'])->group(function () {
+    // Explore Page
+    // Route::get('/explore', [ExploreController::class, 'index'])->name('explore');
+
     // Home Page - Display User's Posts
     Route::get('/homee', [PostController::class, 'home'])->name('homee');
 
@@ -55,37 +60,40 @@ Route::middleware(['auth'])->group(function () {
     
     // Delete Post via AJAX
     Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
-
-    // Fetch Comments for a Post
     Route::get('/posts/{postId}/comments', [CommentController::class, 'fetchComments'])->name('comments.fetch');
-
-    // Logout Route
-    Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 });
 
-// Guest Routes (no authentication required)
+// Login & Logout Routes
 Route::middleware('guest')->group(function() {
-    // Login Routes
     Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('login', [LoginController::class, 'login']);
 
-    // Signup Routes
+    // Signup Route
     Route::get('/signup', [SignupController::class, 'showSignup'])->name('signup'); 
     Route::post('/signup', [SignupController::class, 'processSignup'])->name('signup.post');
 });
 
-// Posts Fetch Route (seems like an API route, pertimbangkan memindahkannya ke api.php)
+// Logout Route (needs auth)
+Route::post('logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
+
 Route::get('/posts', [PostController::class, 'fetchPosts'])->name('posts.fetch');
+Route::get('/posts/{id}/details', [PostController::class, 'getDetails']);
 
-// Topics and Users Routes (menghindari duplikasi)
-Route::prefix('/api')->group(function () {
-    // Topics Routes
-    Route::get('/topics', [TopicController::class, 'getTopics']);
-    Route::get('/topics/search', [TopicController::class, 'search']);
 
-    // Users Routes
-    Route::get('/users', [TopicController::class, 'getUsers']);
-});
+
+// Hidden comment homee
+Route::patch('/comments/{id}/hide', [PostController::class, 'hideComment'])->name('comments.hide');
+Route::get('/posts/{id}/hidden-comments', [PostController::class, 'getHiddenComments'])->name('posts.hidden-comments');
+Route::patch('/comments/{id}/unhide', [PostController::class, 'unhideComment'])->name('comments.unhide');
+
+
+//Notification
+Route::get('/notifications/unread-count', [PostController::class, 'getUnreadCount'])->name('notifications.unread-count');
+
+
+//Update status public private
+Route::patch('/posts/{post}/toggle-status', [PostController::class, 'toggleStatus'])->name('posts.toggleStatus');
+
 
 // Database test route (for checking DB connection)
 Route::get('/db-test', function () {
