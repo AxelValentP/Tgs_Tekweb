@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\CommentLike;
 use App\Models\Comment;
 
 class CommentController extends Controller
@@ -14,22 +13,12 @@ class CommentController extends Controller
     public function fetchComments($postId)
     {
         $comments = Comment::where('post_id', $postId)
-        ->where('hide', false)
-        ->with('user') // Include user details
-        ->withCount('likes') // Include the likes count
-        ->get()
-        ->map(function ($comment) {
-            return [
-                'id' => $comment->id,
-                'user' => $comment->user,
-                'text' => $comment->text,
-                'created_at' => $comment->created_at,
-                'likes_count' => $comment->likes_count,
-                'liked' => $comment->likes->contains('user_id', auth()->id()),
-            ];
-        });
+            ->where('hide', false)
+            ->with('user') // Include user details
+            ->latest() // Order by newest comments first
+            ->get();
 
-    return response()->json($comments);
+        return response()->json($comments);
     }
 
     /**
@@ -51,20 +40,5 @@ class CommentController extends Controller
 
         // Return the newly created comment with the user's details
         return response()->json($comment->load('user'));
-    }
-    public function likeComment(Request $request, $commentId)
-    {
-        $userId = auth()->id();
-        $comment = Comment::findOrFail($commentId);
-
-        $existingLike = CommentLike::where('comment_id', $commentId)->where('user_id', $userId)->first();
-
-        if ($existingLike) {
-            $existingLike->delete();
-            return response()->json(['message' => 'Comment unliked.', 'likes_count' => $comment->likes()->count()]);
-        }
-
-        CommentLike::create(['comment_id' => $commentId, 'user_id' => $userId]);
-        return response()->json(['message' => 'Comment liked.', 'likes_count' => $comment->likes()->count()]);
     }
 }

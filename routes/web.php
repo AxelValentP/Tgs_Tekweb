@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LoginController;
-use App\Http\Controllers\ReplyController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\SignupController;
 use Illuminate\Support\Facades\DB;
@@ -60,19 +59,19 @@ Route::middleware(['auth'])->group(function () {
 
     // Edit Post Caption via AJAX
     Route::patch('/posts/{post}/edit', [PostController::class, 'editCaption'])->name('posts.editCaption');
-
+    
     // Delete Post via AJAX
     Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
     Route::get('/posts/{postId}/comments', [CommentController::class, 'fetchComments'])->name('comments.fetch');
 });
 
 // Login & Logout Routes
-Route::middleware('guest')->group(function () {
+Route::middleware('guest')->group(function() {
     Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('login', [LoginController::class, 'login']);
 
     // Signup Route
-    Route::get('/signup', [SignupController::class, 'showSignup'])->name('signup');
+    Route::get('/signup', [SignupController::class, 'showSignup'])->name('signup'); 
     Route::post('/signup', [SignupController::class, 'processSignup'])->name('signup.post');
 });
 
@@ -98,13 +97,6 @@ Route::post('/clear-notifications', [NotificationController::class, 'clearNotifi
 
 //Update status public private
 Route::patch('/posts/{post}/toggle-status', [PostController::class, 'toggleStatus'])->name('posts.toggleStatus');
-Route::post('/comments/{commentId}/replies', [ReplyController::class, 'store'])->name('replies.store');
-Route::get('/comments/{commentId}/replies', [ReplyController::class, 'fetchReplies'])->name('replies.fetch');
-
-
-Route::middleware(['auth'])->group(function () {
-    Route::post('/comments/{commentId}/like', [CommentController::class, 'likeComment'])->name('comments.like');
-});
 
 
 // Database test route (for checking DB connection)

@@ -464,6 +464,7 @@
     .comment-form button:hover {
         background: #555;
     }
+<<<<<<< HEAD
 
     .comment-item-header {
         display: flex;
@@ -523,6 +524,8 @@
     .reply-btn:hover {
         text-decoration: underline;
     }
+=======
+>>>>>>> parent of 0899fda (Merge branch 'main' into branchowen)
 </style>
 
 <div class="content-wrapper">
@@ -826,12 +829,22 @@
 
         function showComments(postId) {
             currentPostId = postId;
+<<<<<<< HEAD
             commentList.innerHTML = '';
+=======
+            commentList.innerHTML = ''; // Clear previous comments
+>>>>>>> parent of 0899fda (Merge branch 'main' into branchowen)
             commentModal.classList.add('show');
 
             fetch(`/posts/${postId}/comments`)
                 .then(response => {
+<<<<<<< HEAD
                     if (!response.ok) throw new Error('Failed to fetch comments');
+=======
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch comments');
+                    }
+>>>>>>> parent of 0899fda (Merge branch 'main' into branchowen)
                     return response.json();
                 })
                 .then(comments => {
@@ -839,8 +852,21 @@
                         commentList.innerHTML = '<p>No comments yet. Be the first to comment!</p>';
                     } else {
                         comments.forEach(comment => {
+<<<<<<< HEAD
                             const commentElement = createCommentWithReplies(comment);
                             commentList.appendChild(commentElement);
+=======
+                            const commentItem = document.createElement('div');
+                            commentItem.classList.add('comment-item');
+                            commentItem.innerHTML = `
+                            <div class="comment-item-header">
+                                <span class="comment-user">${comment.user.name}</span>
+                                <span class="comment-time">${new Date(comment.created_at).toLocaleString()}</span>
+                            </div>
+                            <div class="comment-text">${comment.text}</div>
+                        `;
+                            commentList.appendChild(commentItem);
+>>>>>>> parent of 0899fda (Merge branch 'main' into branchowen)
                         });
                     }
                 })
@@ -849,6 +875,7 @@
                     commentList.innerHTML = '<p>Failed to load comments. Please try again later.</p>';
                 });
         }
+<<<<<<< HEAD
 
         function createCommentWithReplies(comment) {
             const commentItem = document.createElement('div');
@@ -960,6 +987,8 @@
                     repliesList.innerHTML = '<p>Failed to load replies. Please try again later.</p>';
                 });
         }
+=======
+>>>>>>> parent of 0899fda (Merge branch 'main' into branchowen)
 
         function addComment(e) {
             e.preventDefault();
