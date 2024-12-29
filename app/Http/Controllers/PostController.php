@@ -209,7 +209,10 @@ class PostController extends Controller
 
         // Implement pagination (fetch 10 posts per page)
         $posts = $query->paginate(10);
-
+        $posts->getCollection()->transform(function ($post) {
+            $post->liked = $post->likes->contains('user_id', auth()->id());
+            return $post;
+        });
         return response()->json($posts);
     }
 
