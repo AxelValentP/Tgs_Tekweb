@@ -23,8 +23,11 @@ class Comment extends Model
     }
     public function replies()
     {
-        return $this->hasMany(Comment::class, 'parent_id')->with('user'); // Include user for each reply
+        return $this->hasMany(Reply::class)->with('user');
     }
-    
+    public function likes()
+    {
+        return $this->hasMany(CommentLike::class);
+    }
 
 }
