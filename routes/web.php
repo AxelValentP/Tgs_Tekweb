@@ -9,6 +9,7 @@ use App\Http\Controllers\SignupController;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\TopicController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\ExploreController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\NotificationController;
@@ -116,3 +117,21 @@ Route::get('/db-test', function () {
         return 'Database connection failed: ' . $e->getMessage();
     }
 });
+
+// Ambil semua topik 
+Route::get('/topics/all', [TopicController::class, 'indexAll']);
+
+// Ambil semua topik tapi diacak
+Route::get('/topics/all-shuffled', [TopicController::class, 'indexAllShuffled']);
+
+// Search topik
+Route::get('/topics/search', [TopicController::class, 'search']);
+
+// Ambil semua user
+Route::get('/users/all', [UserController::class, 'indexAll']);
+
+// Ambil semua user acak
+Route::get('/users/all-shuffled', [UserController::class, 'indexAllShuffled']);
+
+// Search user
+Route::get('/users/search', [UserController::class, 'search']);

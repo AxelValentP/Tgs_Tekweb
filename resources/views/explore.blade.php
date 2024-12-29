@@ -476,65 +476,65 @@
     .comment-form button:hover {
         background: #555;
     }
+
     .comment-item-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
 
-.comment-user {
-    display: flex;
-    align-items: center;
-    font-weight: bold;
-    color: #ddd;
-}
+    .comment-user {
+        display: flex;
+        align-items: center;
+        font-weight: bold;
+        color: #ddd;
+    }
 
-.like-btn {
-    display: flex;
-    align-items: center;
-    margin-left: 10px;
-    cursor: pointer;
-    color: #aaa;
-    font-size: 0.9rem;
-}
+    .like-btn {
+        display: flex;
+        align-items: center;
+        margin-left: 10px;
+        cursor: pointer;
+        color: #aaa;
+        font-size: 0.9rem;
+    }
 
-.like-btn.liked i {
-    color: red;
-}
+    .like-btn.liked i {
+        color: red;
+    }
 
-.like-btn:hover {
-    color: #fff;
-}
+    .like-btn:hover {
+        color: #fff;
+    }
 
-.comment-time {
-    font-size: 0.8rem;
-    color: #aaa;
-}
+    .comment-time {
+        font-size: 0.8rem;
+        color: #aaa;
+    }
 
-.comment-text {
-    margin-top: 5px;
-    color: #ccc;
-    font-size: 0.9rem;
-    line-height: 1.4;
-}
+    .comment-text {
+        margin-top: 5px;
+        color: #ccc;
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
 
-.comment-actions {
-    margin-top: 10px;
-}
+    .comment-actions {
+        margin-top: 10px;
+    }
 
-.reply-btn {
-    background: none;
-    border: none;
-    color: #008cba;
-    cursor: pointer;
-    font-size: 0.9rem;
-    padding: 0;
-}
+    .reply-btn {
+        background: none;
+        border: none;
+        color: #008cba;
+        cursor: pointer;
+        font-size: 0.9rem;
+        padding: 0;
+    }
 
-.reply-btn:hover {
-    text-decoration: underline;
-}
-
+    .reply-btn:hover {
+        text-decoration: underline;
+    }
 </style>
 
 <div class="content-wrapper">
@@ -851,40 +851,40 @@
         // Function to Show Comments in Modal
         // Show comments in modal
         function showComments(postId) {
-    currentPostId = postId; // Set the current post ID
-    commentList.innerHTML = ''; // Clear previous comments
-    commentModal.classList.add('show'); // Show the modal
+            currentPostId = postId; // Set the current post ID
+            commentList.innerHTML = ''; // Clear previous comments
+            commentModal.classList.add('show'); // Show the modal
 
-    // Fetch comments for the specific post
-    fetch(`/posts/${postId}/comments`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Failed to fetch comments');
-            }
-            return response.json();
-        })
-        .then(comments => {
-            if (comments.length === 0) {
-                commentList.innerHTML = '<p>No comments yet. Be the first to comment!</p>';
-            } else {
-                comments.forEach(comment => {
-                    const commentElement = createCommentWithReplies(comment);
-                    commentList.appendChild(commentElement);
+            // Fetch comments for the specific post
+            fetch(`/posts/${postId}/comments`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch comments');
+                    }
+                    return response.json();
+                })
+                .then(comments => {
+                    if (comments.length === 0) {
+                        commentList.innerHTML = '<p>No comments yet. Be the first to comment!</p>';
+                    } else {
+                        comments.forEach(comment => {
+                            const commentElement = createCommentWithReplies(comment);
+                            commentList.appendChild(commentElement);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching comments:', error);
+                    commentList.innerHTML = '<p>Failed to load comments. Please try again later.</p>';
                 });
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching comments:', error);
-            commentList.innerHTML = '<p>Failed to load comments. Please try again later.</p>';
-        });
-}
+        }
 
 
-// Create a comment element with reply functionality
-function createCommentWithReplies(comment) {
-    const commentItem = document.createElement('div');
-    commentItem.classList.add('comment-item');
-    commentItem.innerHTML = `
+        // Create a comment element with reply functionality
+        function createCommentWithReplies(comment) {
+            const commentItem = document.createElement('div');
+            commentItem.classList.add('comment-item');
+            commentItem.innerHTML = `
         <div class="comment-item-header">
             <span class="comment-user">
                 ${comment.user.name}
@@ -905,95 +905,97 @@ function createCommentWithReplies(comment) {
         </form>
     `;
 
-    const replyBtn = commentItem.querySelector('.reply-btn');
-    const replyForm = commentItem.querySelector(`#reply-form-${comment.id}`);
-    const repliesList = commentItem.querySelector(`#replies-${comment.id}`);
-    const likeBtn = commentItem.querySelector('.like-btn');
+            const replyBtn = commentItem.querySelector('.reply-btn');
+            const replyForm = commentItem.querySelector(`#reply-form-${comment.id}`);
+            const repliesList = commentItem.querySelector(`#replies-${comment.id}`);
+            const likeBtn = commentItem.querySelector('.like-btn');
 
-    // Toggle reply form visibility
-    replyBtn.addEventListener('click', () => {
-        replyForm.style.display = replyForm.style.display === 'none' ? 'block' : 'none';
-        if (replyForm.style.display === 'block') {
-            fetchReplies(comment.id, repliesList);
+            // Toggle reply form visibility
+            replyBtn.addEventListener('click', () => {
+                replyForm.style.display = replyForm.style.display === 'none' ? 'block' : 'none';
+                if (replyForm.style.display === 'block') {
+                    fetchReplies(comment.id, repliesList);
+                }
+            });
+
+            // Handle reply submission
+            replyForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const input = replyForm.querySelector('input');
+                const replyText = input.value.trim();
+                if (!replyText) return;
+
+                fetch(`/comments/${comment.id}/replies`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            text: replyText
+                        }),
+                    })
+                    .then(response => response.json())
+                    .then(reply => {
+                        input.value = '';
+                        fetchReplies(comment.id, repliesList); // Refresh replies after adding
+                    })
+                    .catch(error => console.error('Error adding reply:', error));
+            });
+
+            // Handle comment like
+            likeBtn.addEventListener('click', () => {
+                const commentId = likeBtn.dataset.commentId;
+
+                fetch(`/comments/${commentId}/like`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json',
+                        },
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Update like button and count
+                        likeBtn.classList.toggle('liked');
+                        likeBtn.innerHTML = `<i class="lni lni-heart"></i> ${data.likes_count}`;
+                    })
+                    .catch(error => console.error('Error liking comment:', error));
+            });
+
+            return commentItem;
         }
-    });
-
-    // Handle reply submission
-    replyForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const input = replyForm.querySelector('input');
-        const replyText = input.value.trim();
-        if (!replyText) return;
-
-        fetch(`/comments/${comment.id}/replies`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ text: replyText }),
-        })
-            .then(response => response.json())
-            .then(reply => {
-                input.value = '';
-                fetchReplies(comment.id, repliesList); // Refresh replies after adding
-            })
-            .catch(error => console.error('Error adding reply:', error));
-    });
-
-    // Handle comment like
-    likeBtn.addEventListener('click', () => {
-        const commentId = likeBtn.dataset.commentId;
-
-        fetch(`/comments/${commentId}/like`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json',
-            },
-        })
-            .then(response => response.json())
-            .then(data => {
-                // Update like button and count
-                likeBtn.classList.toggle('liked');
-                likeBtn.innerHTML = `<i class="lni lni-heart"></i> ${data.likes_count}`;
-            })
-            .catch(error => console.error('Error liking comment:', error));
-    });
-
-    return commentItem;
-}
 
 
 
-// Fetch replies for a specific comment
-function fetchReplies(commentId, repliesList) {
-    fetch(`/comments/${commentId}/replies`)
-        .then(response => response.json())
-        .then(replies => {
-            repliesList.innerHTML = ''; // Clear existing replies
-            if (replies.length === 0) {
-                repliesList.innerHTML = '<p>No replies yet.</p>';
-            } else {
-                replies.forEach(reply => {
-                    const replyElement = document.createElement('div');
-                    replyElement.classList.add('comment-item');
-                    replyElement.innerHTML = `
+        // Fetch replies for a specific comment
+        function fetchReplies(commentId, repliesList) {
+            fetch(`/comments/${commentId}/replies`)
+                .then(response => response.json())
+                .then(replies => {
+                    repliesList.innerHTML = ''; // Clear existing replies
+                    if (replies.length === 0) {
+                        repliesList.innerHTML = '<p>No replies yet.</p>';
+                    } else {
+                        replies.forEach(reply => {
+                            const replyElement = document.createElement('div');
+                            replyElement.classList.add('comment-item');
+                            replyElement.innerHTML = `
                         <div class="comment-item-header">
                             <span class="comment-user">${reply.user.name}</span>
                             <span class="comment-time">${new Date(reply.created_at).toLocaleString()}</span>
                         </div>
                         <div class="comment-text">${reply.text}</div>
                     `;
-                    repliesList.appendChild(replyElement);
+                            repliesList.appendChild(replyElement);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching replies:', error);
+                    repliesList.innerHTML = '<p>Failed to load replies. Please try again later.</p>';
                 });
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching replies:', error);
-            repliesList.innerHTML = '<p>Failed to load replies. Please try again later.</p>';
-        });
-}
+        }
 
         // Function to Add a Comment
         function addComment(e) {
@@ -1149,6 +1151,214 @@ function fetchReplies(commentId, repliesList) {
                 }
             });
         }
+    });
+    // ========== TOPICS & PROFILES SECTION =========== //
+
+    // =========================================================
+    // =============== TOPICS SECTION ==========================
+    // =========================================================
+    const searchTopicsInput = document.getElementById('searchTopicsInput');
+    const topicContainer = document.getElementById('topicContainer');
+    const seeMoreTopicsBtn = document.getElementById('seeMoreTopicsBtn');
+    const resetTopicsBtn = document.getElementById('resetTopicsBtn');
+
+    let allTopics = []; // Menampung semua topics acak dari server
+    let topicIndex = 0; // Penanda index "See More"
+    const topicChunkSize = 3; // Jumlah item per "See More"
+    let searchActiveTopics = false; // Apakah user sedang melakukan search?
+
+    // 1) Fetch data default (topics shuffled)
+    fetch('/topics/all-shuffled')
+        .then(res => res.json())
+        .then(data => {
+            allTopics = data;
+            loadMoreTopics(); // Tampilkan 3 item awal
+        })
+        .catch(err => console.error('Error fetching /topics/all-shuffled:', err));
+
+    // 2) Search event
+    searchTopicsInput.addEventListener('input', function() {
+        const query = this.value.trim();
+
+        if (!query) {
+            // Query kosong -> kembali ke "default data" mode
+            searchActiveTopics = false;
+            topicIndex = 0; // Reset index
+            topicContainer.innerHTML = '';
+            seeMoreTopicsBtn.style.display = 'inline-block'; // Tampilkan "See More"
+            resetTopicsBtn.style.display = 'none'; // Sembunyikan reset
+            loadMoreTopics(); // Munculkan 3 item awal
+            return;
+        }
+
+        // Jika ada query -> masuk "search mode"
+        searchActiveTopics = true;
+
+        // Hapus data di container
+        topicContainer.innerHTML = '';
+
+        // Sembunyikan "See More" & "Reset" saat search
+        seeMoreTopicsBtn.style.display = 'none';
+        resetTopicsBtn.style.display = 'none';
+
+        // Lakukan pencarian
+        fetch('/topics/search?query=' + encodeURIComponent(query))
+            .then(response => response.json())
+            .then(data => {
+                if (data.length === 0) {
+                    topicContainer.innerHTML = '<p>No Topics Found.</p>';
+                } else {
+                    data.forEach(topic => {
+                        const a = document.createElement('a');
+                        a.href = '#';
+                        a.textContent = topic.name;
+                        topicContainer.appendChild(a);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error searching topics:', error);
+                topicContainer.innerHTML = '<p>Error loading topics.</p>';
+            });
+    });
+
+    // 3) Load more topics (default data)
+    seeMoreTopicsBtn.addEventListener('click', loadMoreTopics);
+
+    function loadMoreTopics() {
+        // Jika user sedang search, batalkan "See More"
+        if (searchActiveTopics) return;
+
+        const slice = allTopics.slice(topicIndex, topicIndex + topicChunkSize);
+        slice.forEach(t => {
+            const a = document.createElement('a');
+            a.href = '#';
+            a.textContent = t; // 't' karena di /topics/all-shuffled => pluck('name')
+            topicContainer.appendChild(a);
+        });
+        topicIndex += topicChunkSize;
+
+        // Jika sudah melebihi total data
+        if (topicIndex >= allTopics.length) {
+            seeMoreTopicsBtn.textContent = 'No more';
+            seeMoreTopicsBtn.classList.add('disabled');
+            seeMoreTopicsBtn.style.cursor = 'default';
+            resetTopicsBtn.style.display = 'inline-block';
+        }
+    }
+
+    // 4) Reset button
+    resetTopicsBtn.addEventListener('click', () => {
+        // Kembalikan ke awal
+        seeMoreTopicsBtn.textContent = 'See More';
+        seeMoreTopicsBtn.classList.remove('disabled');
+        seeMoreTopicsBtn.style.cursor = 'pointer';
+        resetTopicsBtn.style.display = 'none';
+
+        topicIndex = 0;
+        topicContainer.innerHTML = '';
+        loadMoreTopics();
+    });
+
+
+    // =========================================================
+    // =============== USERS SECTION ===========================
+    // =========================================================
+    const searchProfilesInput = document.getElementById('searchProfilesInput');
+    const profileContainer = document.getElementById('profileContainer');
+    const seeMoreProfileBtn = document.getElementById('seeMoreProfileBtn');
+    const resetProfileBtn = document.getElementById('resetProfileBtn');
+
+    let allUsers = []; // Menampung semua users acak
+    let profileIndex = 0; // Penanda index "See More"
+    const userChunkSize = 3;
+    let searchActiveUsers = false; // Apakah user sedang melakukan search?
+
+    // 1) Fetch data default (users shuffled)
+    fetch('/users/all-shuffled')
+        .then(res => res.json())
+        .then(data => {
+            allUsers = data;
+            loadMoreProfiles();
+        })
+        .catch(err => console.error('Error fetching /users/all-shuffled:', err));
+
+    // 2) Search event
+    searchProfilesInput.addEventListener('input', function() {
+        const query = this.value.trim();
+
+        if (!query) {
+            // Query kosong -> kembali ke "default data" mode
+            searchActiveUsers = false;
+            profileIndex = 0;
+            profileContainer.innerHTML = '';
+            seeMoreProfileBtn.style.display = 'inline-block';
+            resetProfileBtn.style.display = 'none';
+            loadMoreProfiles();
+            return;
+        }
+
+        // Ada query -> "search mode"
+        searchActiveUsers = true;
+
+        profileContainer.innerHTML = '';
+        seeMoreProfileBtn.style.display = 'none';
+        resetProfileBtn.style.display = 'none';
+
+        // Lakukan pencarian
+        fetch('/users/search?query=' + encodeURIComponent(query))
+            .then(response => response.json())
+            .then(data => {
+                if (data.length === 0) {
+                    profileContainer.innerHTML = '<p>No Profiles Found.</p>';
+                } else {
+                    data.forEach(user => {
+                        const a = document.createElement('a');
+                        a.href = '#';
+                        a.textContent = user.name;
+                        profileContainer.appendChild(a);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error searching users:', error);
+                profileContainer.innerHTML = '<p>Error loading profiles.</p>';
+            });
+    });
+
+    // 3) Load more profiles (default data)
+    seeMoreProfileBtn.addEventListener('click', loadMoreProfiles);
+
+    function loadMoreProfiles() {
+        if (searchActiveUsers) return;
+
+        const slice = allUsers.slice(profileIndex, profileIndex + userChunkSize);
+        slice.forEach(u => {
+            const a = document.createElement('a');
+            a.href = '#';
+            a.textContent = u;
+            profileContainer.appendChild(a);
+        });
+        profileIndex += userChunkSize;
+
+        if (profileIndex >= allUsers.length) {
+            seeMoreProfileBtn.textContent = 'No more';
+            seeMoreProfileBtn.classList.add('disabled');
+            seeMoreProfileBtn.style.cursor = 'default';
+            resetProfileBtn.style.display = 'inline-block';
+        }
+    }
+
+    // 4) Reset button
+    resetProfileBtn.addEventListener('click', () => {
+        seeMoreProfileBtn.textContent = 'See More';
+        seeMoreProfileBtn.classList.remove('disabled');
+        seeMoreProfileBtn.style.cursor = 'pointer';
+        resetProfileBtn.style.display = 'none';
+
+        profileIndex = 0;
+        profileContainer.innerHTML = '';
+        loadMoreProfiles();
     });
 </script>
 
