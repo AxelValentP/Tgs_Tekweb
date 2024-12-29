@@ -25,9 +25,6 @@ class Comment extends Model
     {
         return $this->hasMany(Reply::class)->with('user');
     }
-    public function likes()
-    {
-        return $this->hasMany(CommentLike::class);
-    }
+    
 
 }

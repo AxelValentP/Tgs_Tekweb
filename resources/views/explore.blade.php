@@ -476,65 +476,6 @@
     .comment-form button:hover {
         background: #555;
     }
-    .comment-item-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.comment-user {
-    display: flex;
-    align-items: center;
-    font-weight: bold;
-    color: #ddd;
-}
-
-.like-btn {
-    display: flex;
-    align-items: center;
-    margin-left: 10px;
-    cursor: pointer;
-    color: #aaa;
-    font-size: 0.9rem;
-}
-
-.like-btn.liked i {
-    color: red;
-}
-
-.like-btn:hover {
-    color: #fff;
-}
-
-.comment-time {
-    font-size: 0.8rem;
-    color: #aaa;
-}
-
-.comment-text {
-    margin-top: 5px;
-    color: #ccc;
-    font-size: 0.9rem;
-    line-height: 1.4;
-}
-
-.comment-actions {
-    margin-top: 10px;
-}
-
-.reply-btn {
-    background: none;
-    border: none;
-    color: #008cba;
-    cursor: pointer;
-    font-size: 0.9rem;
-    padding: 0;
-}
-
-.reply-btn:hover {
-    text-decoration: underline;
-}
-
 </style>
 
 <div class="content-wrapper">
@@ -879,19 +820,13 @@
         });
 }
 
-
 // Create a comment element with reply functionality
 function createCommentWithReplies(comment) {
     const commentItem = document.createElement('div');
     commentItem.classList.add('comment-item');
     commentItem.innerHTML = `
         <div class="comment-item-header">
-            <span class="comment-user">
-                ${comment.user.name}
-                <span class="like-btn ${comment.liked ? 'liked' : ''}" data-comment-id="${comment.id}">
-                    <i class="lni lni-heart"></i> ${comment.likes_count || 0}
-                </span>
-            </span>
+            <span class="comment-user">${comment.user.name}</span>
             <span class="comment-time">${new Date(comment.created_at).toLocaleString()}</span>
         </div>
         <div class="comment-text">${comment.text}</div>
@@ -908,7 +843,6 @@ function createCommentWithReplies(comment) {
     const replyBtn = commentItem.querySelector('.reply-btn');
     const replyForm = commentItem.querySelector(`#reply-form-${comment.id}`);
     const repliesList = commentItem.querySelector(`#replies-${comment.id}`);
-    const likeBtn = commentItem.querySelector('.like-btn');
 
     // Toggle reply form visibility
     replyBtn.addEventListener('click', () => {
@@ -941,30 +875,8 @@ function createCommentWithReplies(comment) {
             .catch(error => console.error('Error adding reply:', error));
     });
 
-    // Handle comment like
-    likeBtn.addEventListener('click', () => {
-        const commentId = likeBtn.dataset.commentId;
-
-        fetch(`/comments/${commentId}/like`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json',
-            },
-        })
-            .then(response => response.json())
-            .then(data => {
-                // Update like button and count
-                likeBtn.classList.toggle('liked');
-                likeBtn.innerHTML = `<i class="lni lni-heart"></i> ${data.likes_count}`;
-            })
-            .catch(error => console.error('Error liking comment:', error));
-    });
-
     return commentItem;
 }
-
-
 
 // Fetch replies for a specific comment
 function fetchReplies(commentId, repliesList) {
