@@ -991,7 +991,7 @@
                 .catch(error => console.error('Error adding comment:', error));
         }
 
-        
+
     });
 </script>
 @endsection
