@@ -82,6 +82,25 @@ Route::post('logout', [LoginController::class, 'logout'])->name('logout')->middl
 Route::get('/posts', [PostController::class, 'fetchPosts'])->name('posts.fetch');
 Route::get('/posts/{id}/details', [PostController::class, 'getDetails']);
 
+// Ambil semua topik 
+Route::get('/topics/all', [TopicController::class, 'indexAll']);
+
+// Ambil semua topik tapi diacak
+Route::get('/topics/all-shuffled', [TopicController::class, 'indexAllShuffled']);
+
+// Search topik
+Route::get('/topics/search', [TopicController::class, 'search']);
+
+use App\Http\Controllers\UserController;
+
+// Ambil semua user
+Route::get('/users/all', [UserController::class, 'indexAll']);
+
+// Ambil semua user acak
+Route::get('/users/all-shuffled', [UserController::class, 'indexAllShuffled']);
+
+// Search user
+Route::get('/users/search', [UserController::class, 'search']);
 
 
 // Hidden comment homee

@@ -92,7 +92,6 @@
         padding: 0.5rem;
     }
 
-    /* Avatar dihilangkan, hanya username dan waktu */
     .post-header .username {
         font-weight: bold;
         color: #ccc;
@@ -110,7 +109,6 @@
         cursor: pointer;
     }
 
-    /* Slider Container */
     .image-slider {
         position: relative;
         width: 100%;
@@ -128,7 +126,6 @@
         display: block;
     }
 
-    /* Prev/Next button */
     .slider-btn {
         position: absolute;
         top: 50%;
@@ -363,9 +360,7 @@
         display: flex;
         flex-direction: column;
         max-height: 80vh;
-        /* Limit the maximum height */
         overflow: hidden;
-        /* Ensure no overflow affects the modal layout */
     }
 
     .modal-header {
@@ -389,23 +384,16 @@
 
     .comment-list {
         flex: 1;
-        /* Grow to fill available space */
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
         overflow-y: auto;
-        /* Add vertical scrolling */
         max-height: calc(2.5rem * 5);
-        /* 2.5rem (approx height of one comment) * 5 = Height for 5 comments */
         margin-bottom: 1rem;
-        /* Space for the comment input */
         scrollbar-width: thin;
-        /* Modern browsers - thin scrollbar */
         scrollbar-color: #555 #222;
-        /* Modern browsers - custom scrollbar colors */
     }
 
-    /* Optional: Customize scrollbar for webkit browsers (Chrome, Edge, Safari) */
     .comment-list::-webkit-scrollbar {
         width: 8px;
     }
@@ -476,65 +464,65 @@
     .comment-form button:hover {
         background: #555;
     }
+
     .comment-item-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
 
-.comment-user {
-    display: flex;
-    align-items: center;
-    font-weight: bold;
-    color: #ddd;
-}
+    .comment-user {
+        display: flex;
+        align-items: center;
+        font-weight: bold;
+        color: #ddd;
+    }
 
-.like-btn {
-    display: flex;
-    align-items: center;
-    margin-left: 10px;
-    cursor: pointer;
-    color: #aaa;
-    font-size: 0.9rem;
-}
+    .like-btn {
+        display: flex;
+        align-items: center;
+        margin-left: 10px;
+        cursor: pointer;
+        color: #aaa;
+        font-size: 0.9rem;
+    }
 
-.like-btn.liked i {
-    color: red;
-}
+    .like-btn.liked i {
+        color: red;
+    }
 
-.like-btn:hover {
-    color: #fff;
-}
+    .like-btn:hover {
+        color: #fff;
+    }
 
-.comment-time {
-    font-size: 0.8rem;
-    color: #aaa;
-}
+    .comment-time {
+        font-size: 0.8rem;
+        color: #aaa;
+    }
 
-.comment-text {
-    margin-top: 5px;
-    color: #ccc;
-    font-size: 0.9rem;
-    line-height: 1.4;
-}
+    .comment-text {
+        margin-top: 5px;
+        color: #ccc;
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
 
-.comment-actions {
-    margin-top: 10px;
-}
+    .comment-actions {
+        margin-top: 10px;
+    }
 
-.reply-btn {
-    background: none;
-    border: none;
-    color: #008cba;
-    cursor: pointer;
-    font-size: 0.9rem;
-    padding: 0;
-}
+    .reply-btn {
+        background: none;
+        border: none;
+        color: #008cba;
+        cursor: pointer;
+        font-size: 0.9rem;
+        padding: 0;
+    }
 
-.reply-btn:hover {
-    text-decoration: underline;
-}
-
+    .reply-btn:hover {
+        text-decoration: underline;
+    }
 </style>
 
 <div class="content-wrapper">
@@ -546,7 +534,6 @@
                 <option value="popular">Popular</option>
                 <option value="oldest">Oldest</option>
             </select>
-
         </div>
         <div class="divider"></div>
 
@@ -555,7 +542,6 @@
             <span class="see-more-btn" id="seeMorePostsBtn">See More Posts</span>
             <span class="reset-btn" id="resetPostsBtn" style="display:none;">Reset</span>
         </div>
-
     </div>
 
     <div class="sidebar-right">
@@ -614,31 +600,30 @@
 
 
 <script>
-    // Ensure that the DOM is fully loaded before executing scripts
     document.addEventListener('DOMContentLoaded', () => {
-        // Select Elements
+        // ========== POST & COMMENTS SECTION =========== //
+
         const postContainer = document.getElementById('postContainer');
         const seeMorePostsBtn = document.getElementById('seeMorePostsBtn');
         const resetPostsBtn = document.getElementById('resetPostsBtn');
         const sortSelect = document.getElementById('sortPostsSelect');
 
-        // Pagination and Sorting Variables
+        // Pagination & Sorting
         let currentPage = 1;
         let currentSort = 'newest';
         let totalPages = 1;
-        const chunkSize = 3; // You can adjust this based on your preference
 
-        // Modal Elements
+        // Modal
         const commentModal = document.getElementById('commentModal');
         const closeModal = document.getElementById('closeModal');
         const commentList = document.getElementById('commentList');
         const commentForm = document.getElementById('commentForm');
         let currentPostId = null;
 
-        // Initial Load
+        // Load initial posts
         fetchPosts(currentSort, currentPage);
 
-        // Event Listeners
+        // Sort select
         sortSelect.addEventListener('change', () => {
             currentSort = sortSelect.value;
             currentPage = 1;
@@ -675,7 +660,6 @@
 
         commentForm.addEventListener('submit', addComment);
 
-        // Function to Fetch Posts from the Server
         function fetchPosts(sort, page, append = false) {
             fetch(`/posts?sort=${sort}&page=${page}`)
                 .then(response => response.json())
@@ -702,13 +686,12 @@
                 .catch(error => console.error('Error fetching posts:', error));
         }
 
-        // Function to Create a Post Element
         function createPostElement(post) {
             const card = document.createElement('div');
             card.classList.add('post-card');
             card.dataset.postId = post.id;
 
-            // Post Header
+            // Header
             const header = document.createElement('div');
             header.classList.add('post-header');
             header.innerHTML = `
@@ -718,13 +701,13 @@
         `;
             card.appendChild(header);
 
-            // Image Slider
+            // Slider
             const slider = document.createElement('div');
             slider.classList.add('image-slider');
 
             post.images.forEach((image, index) => {
                 const img = document.createElement('img');
-                img.src = image.path; // Assuming 'path' contains the image URL
+                img.src = image.path;
                 if (index === 0) img.classList.add('active');
                 slider.appendChild(img);
             });
@@ -733,6 +716,7 @@
                 const prevBtn = document.createElement('div');
                 prevBtn.classList.add('slider-btn', 'slider-prev');
                 prevBtn.innerHTML = '&#10094;';
+
                 const nextBtn = document.createElement('div');
                 nextBtn.classList.add('slider-btn', 'slider-next');
                 nextBtn.innerHTML = '&#10095;';
@@ -751,7 +735,7 @@
 
             card.appendChild(slider);
 
-            // Post Footer
+            // Footer
             const footer = document.createElement('div');
             footer.classList.add('post-footer');
 
@@ -767,7 +751,7 @@
 
             card.appendChild(footer);
 
-            // Event Listeners for Actions
+            // Action Buttons
             const commentBtn = actions.querySelector('.comment-btn');
             commentBtn.addEventListener('click', () => {
                 currentPostId = post.id;
@@ -783,20 +767,14 @@
             return card;
         }
 
-        // Function to Update Actions HTML
         function updateActionsHTML(actions, post) {
-            // Hitung komentar yang tidak di-hide
             const visibleCommentsCount = post.comments.filter(comment => comment.hide === 0).length;
-
             actions.innerHTML = `
-        <span class="comment-btn"><i class="lni lni-comments"></i> ${visibleCommentsCount}</span>
-        <span class="like-btn ${post.liked ? 'liked' : ''}"><i class="lni lni-heart"></i> ${post.likes_count}</span>
-    `;
+            <span class="comment-btn"><i class="lni lni-comments"></i> ${visibleCommentsCount}</span>
+            <span class="like-btn ${post.liked ? 'liked' : ''}"><i class="lni lni-heart"></i> ${post.likes_count}</span>
+        `;
         }
 
-
-
-        // Function to Slide Images in the Slider
         function slideImages(slider, direction) {
             const imgs = slider.querySelectorAll('img');
             let activeIndex = Array.from(imgs).findIndex(img => img.classList.contains('active'));
@@ -807,12 +785,11 @@
             imgs[activeIndex].classList.add('active');
         }
 
-        // Function to Toggle Like
         function toggleLike(postId, card) {
             fetch(`/posts/${postId}/like`, {
                     method: 'POST',
                     headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}', // Ensure CSRF token is included
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({})
@@ -826,7 +803,6 @@
                 .catch(error => console.error('Error liking post:', error));
         }
 
-        // Function to Display "Time Ago" Format
         function timeAgo(date) {
             const seconds = Math.floor((new Date() - date) / 1000);
 
@@ -848,154 +824,143 @@
             return "Just now";
         }
 
-        // Function to Show Comments in Modal
-        // Show comments in modal
         function showComments(postId) {
-    currentPostId = postId; // Set the current post ID
-    commentList.innerHTML = ''; // Clear previous comments
-    commentModal.classList.add('show'); // Show the modal
+            currentPostId = postId;
+            commentList.innerHTML = '';
+            commentModal.classList.add('show');
 
-    // Fetch comments for the specific post
-    fetch(`/posts/${postId}/comments`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Failed to fetch comments');
-            }
-            return response.json();
-        })
-        .then(comments => {
-            if (comments.length === 0) {
-                commentList.innerHTML = '<p>No comments yet. Be the first to comment!</p>';
-            } else {
-                comments.forEach(comment => {
-                    const commentElement = createCommentWithReplies(comment);
-                    commentList.appendChild(commentElement);
+            fetch(`/posts/${postId}/comments`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to fetch comments');
+                    return response.json();
+                })
+                .then(comments => {
+                    if (comments.length === 0) {
+                        commentList.innerHTML = '<p>No comments yet. Be the first to comment!</p>';
+                    } else {
+                        comments.forEach(comment => {
+                            const commentElement = createCommentWithReplies(comment);
+                            commentList.appendChild(commentElement);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching comments:', error);
+                    commentList.innerHTML = '<p>Failed to load comments. Please try again later.</p>';
                 });
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching comments:', error);
-            commentList.innerHTML = '<p>Failed to load comments. Please try again later.</p>';
-        });
-}
-
-
-// Create a comment element with reply functionality
-function createCommentWithReplies(comment) {
-    const commentItem = document.createElement('div');
-    commentItem.classList.add('comment-item');
-    commentItem.innerHTML = `
-        <div class="comment-item-header">
-            <span class="comment-user">
-                ${comment.user.name}
-                <span class="like-btn ${comment.liked ? 'liked' : ''}" data-comment-id="${comment.id}">
-                    <i class="lni lni-heart"></i> ${comment.likes_count || 0}
-                </span>
-            </span>
-            <span class="comment-time">${new Date(comment.created_at).toLocaleString()}</span>
-        </div>
-        <div class="comment-text">${comment.text}</div>
-        <div class="comment-actions">
-            <button class="reply-btn" data-comment-id="${comment.id}">Reply</button>
-        </div>
-        <div class="replies-list" id="replies-${comment.id}" style="margin-left: 20px; margin-top: 10px;"></div>
-        <form class="reply-form" id="reply-form-${comment.id}" style="display: none; margin-top: 10px;">
-            <input type="text" placeholder="Write a reply..." required />
-            <button type="submit">Reply</button>
-        </form>
-    `;
-
-    const replyBtn = commentItem.querySelector('.reply-btn');
-    const replyForm = commentItem.querySelector(`#reply-form-${comment.id}`);
-    const repliesList = commentItem.querySelector(`#replies-${comment.id}`);
-    const likeBtn = commentItem.querySelector('.like-btn');
-
-    // Toggle reply form visibility
-    replyBtn.addEventListener('click', () => {
-        replyForm.style.display = replyForm.style.display === 'none' ? 'block' : 'none';
-        if (replyForm.style.display === 'block') {
-            fetchReplies(comment.id, repliesList);
         }
-    });
 
-    // Handle reply submission
-    replyForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const input = replyForm.querySelector('input');
-        const replyText = input.value.trim();
-        if (!replyText) return;
+        function createCommentWithReplies(comment) {
+            const commentItem = document.createElement('div');
+            commentItem.classList.add('comment-item');
+            commentItem.innerHTML = `
+            <div class="comment-item-header">
+                <span class="comment-user">
+                    ${comment.user.name}
+                    <span class="like-btn ${comment.liked ? 'liked' : ''}" data-comment-id="${comment.id}">
+                        <i class="lni lni-heart"></i> ${comment.likes_count || 0}
+                    </span>
+                </span>
+                <span class="comment-time">${new Date(comment.created_at).toLocaleString()}</span>
+            </div>
+            <div class="comment-text">${comment.text}</div>
+            <div class="comment-actions">
+                <button class="reply-btn" data-comment-id="${comment.id}">Reply</button>
+            </div>
+            <div class="replies-list" id="replies-${comment.id}" style="margin-left: 20px; margin-top: 10px;"></div>
+            <form class="reply-form" id="reply-form-${comment.id}" style="display: none; margin-top: 10px;">
+                <input type="text" placeholder="Write a reply..." required />
+                <button type="submit">Reply</button>
+            </form>
+        `;
 
-        fetch(`/comments/${comment.id}/replies`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ text: replyText }),
-        })
-            .then(response => response.json())
-            .then(reply => {
-                input.value = '';
-                fetchReplies(comment.id, repliesList); // Refresh replies after adding
-            })
-            .catch(error => console.error('Error adding reply:', error));
-    });
+            const replyBtn = commentItem.querySelector('.reply-btn');
+            const replyForm = commentItem.querySelector(`#reply-form-${comment.id}`);
+            const repliesList = commentItem.querySelector(`#replies-${comment.id}`);
+            const likeBtn = commentItem.querySelector('.like-btn');
 
-    // Handle comment like
-    likeBtn.addEventListener('click', () => {
-        const commentId = likeBtn.dataset.commentId;
+            // Toggle reply form
+            replyBtn.addEventListener('click', () => {
+                replyForm.style.display = replyForm.style.display === 'none' ? 'block' : 'none';
+                if (replyForm.style.display === 'block') {
+                    fetchReplies(comment.id, repliesList);
+                }
+            });
 
-        fetch(`/comments/${commentId}/like`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json',
-            },
-        })
-            .then(response => response.json())
-            .then(data => {
-                // Update like button and count
-                likeBtn.classList.toggle('liked');
-                likeBtn.innerHTML = `<i class="lni lni-heart"></i> ${data.likes_count}`;
-            })
-            .catch(error => console.error('Error liking comment:', error));
-    });
+            // Submit reply
+            replyForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const input = replyForm.querySelector('input');
+                const replyText = input.value.trim();
+                if (!replyText) return;
 
-    return commentItem;
-}
+                fetch(`/comments/${comment.id}/replies`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            text: replyText
+                        }),
+                    })
+                    .then(response => response.json())
+                    .then(reply => {
+                        input.value = '';
+                        fetchReplies(comment.id, repliesList); // Refresh replies
+                    })
+                    .catch(error => console.error('Error adding reply:', error));
+            });
 
+            // Like comment
+            likeBtn.addEventListener('click', () => {
+                const commentId = likeBtn.dataset.commentId;
+                fetch(`/comments/${commentId}/like`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json',
+                        },
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        likeBtn.classList.toggle('liked');
+                        likeBtn.innerHTML = `<i class="lni lni-heart"></i> ${data.likes_count}`;
+                    })
+                    .catch(error => console.error('Error liking comment:', error));
+            });
 
+            return commentItem;
+        }
 
-// Fetch replies for a specific comment
-function fetchReplies(commentId, repliesList) {
-    fetch(`/comments/${commentId}/replies`)
-        .then(response => response.json())
-        .then(replies => {
-            repliesList.innerHTML = ''; // Clear existing replies
-            if (replies.length === 0) {
-                repliesList.innerHTML = '<p>No replies yet.</p>';
-            } else {
-                replies.forEach(reply => {
-                    const replyElement = document.createElement('div');
-                    replyElement.classList.add('comment-item');
-                    replyElement.innerHTML = `
-                        <div class="comment-item-header">
-                            <span class="comment-user">${reply.user.name}</span>
-                            <span class="comment-time">${new Date(reply.created_at).toLocaleString()}</span>
-                        </div>
-                        <div class="comment-text">${reply.text}</div>
-                    `;
-                    repliesList.appendChild(replyElement);
+        function fetchReplies(commentId, repliesList) {
+            fetch(`/comments/${commentId}/replies`)
+                .then(response => response.json())
+                .then(replies => {
+                    repliesList.innerHTML = '';
+                    if (replies.length === 0) {
+                        repliesList.innerHTML = '<p>No replies yet.</p>';
+                    } else {
+                        replies.forEach(reply => {
+                            const replyElement = document.createElement('div');
+                            replyElement.classList.add('comment-item');
+                            replyElement.innerHTML = `
+                            <div class="comment-item-header">
+                                <span class="comment-user">${reply.user.name}</span>
+                                <span class="comment-time">${new Date(reply.created_at).toLocaleString()}</span>
+                            </div>
+                            <div class="comment-text">${reply.text}</div>
+                        `;
+                            repliesList.appendChild(replyElement);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching replies:', error);
+                    repliesList.innerHTML = '<p>Failed to load replies. Please try again later.</p>';
                 });
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching replies:', error);
-            repliesList.innerHTML = '<p>Failed to load replies. Please try again later.</p>';
-        });
-}
+        }
 
-        // Function to Add a Comment
         function addComment(e) {
             e.preventDefault();
             const input = commentForm.querySelector('input');
@@ -1017,7 +982,7 @@ function fetchReplies(commentId, repliesList) {
                     input.value = '';
                     showComments(currentPostId);
 
-                    // Update the comments count in the post card
+                    // Update comments count
                     const postCard = document.querySelector(`.post-card[data-post-id='${currentPostId}']`);
                     const commentBtn = postCard.querySelector('.comment-btn');
                     const currentCount = parseInt(commentBtn.textContent.split(' ')[1]) || 0;
@@ -1026,130 +991,7 @@ function fetchReplies(commentId, repliesList) {
                 .catch(error => console.error('Error adding comment:', error));
         }
 
-        // Initial Loading of Topics and Profiles
-        loadMoreTopics();
-        loadMoreProfiles();
-
-        // Search Functionality for Topics and Profiles
-        const searchTopicsInput = document.getElementById('searchTopicsInput');
-        const searchProfilesInput = document.getElementById('searchProfilesInput');
-
-        searchTopicsInput.addEventListener('input', filterTopics);
-        searchProfilesInput.addEventListener('input', filterProfiles);
-
-        // Functions for Topics Pagination
-        let topicIndex = 0;
-        const topicContainer = document.getElementById('topicContainer');
-        const seeMoreTopicsBtn = document.getElementById('seeMoreTopicsBtn');
-        const resetTopicsBtn = document.getElementById('resetTopicsBtn');
-
-        seeMoreTopicsBtn.addEventListener('click', loadMoreTopics);
-        resetTopicsBtn.addEventListener('click', resetTopics);
-
-        function loadMoreTopics() {
-            const slice = allTopics.slice(topicIndex, topicIndex + chunkSize);
-            slice.forEach(t => {
-                const a = document.createElement('a');
-                a.href = "#";
-                a.textContent = t;
-                topicContainer.appendChild(a);
-            });
-            topicIndex += chunkSize;
-            checkTopicsPagination();
-        }
-
-        function resetTopics() {
-            topicIndex = 0;
-            topicContainer.innerHTML = '';
-            seeMoreTopicsBtn.textContent = 'See More';
-            seeMoreTopicsBtn.classList.remove('disabled');
-            seeMoreTopicsBtn.style.cursor = 'pointer';
-            resetTopicsBtn.style.display = 'none';
-            seeMoreTopicsBtn.addEventListener('click', loadMoreTopics);
-            loadMoreTopics();
-        }
-
-        function checkTopicsPagination() {
-            if (topicIndex >= allTopics.length) {
-                seeMoreTopicsBtn.textContent = 'No more';
-                seeMoreTopicsBtn.classList.add('disabled');
-                seeMoreTopicsBtn.style.cursor = 'default';
-                resetTopicsBtn.style.display = 'inline-block';
-                seeMoreTopicsBtn.removeEventListener('click', loadMoreTopics);
-            } else {
-                seeMoreTopicsBtn.textContent = 'See More';
-                seeMoreTopicsBtn.classList.remove('disabled');
-            }
-        }
-
-        // Functions for Profiles Pagination
-        let profileIndex = 0;
-        const profileContainer = document.getElementById('profileContainer');
-        const seeMoreProfileBtn = document.getElementById('seeMoreProfileBtn');
-        const resetProfileBtn = document.getElementById('resetProfileBtn');
-
-        seeMoreProfileBtn.addEventListener('click', loadMoreProfiles);
-        resetProfileBtn.addEventListener('click', resetProfiles);
-
-        function loadMoreProfiles() {
-            const slice = allProfiles.slice(profileIndex, profileIndex + chunkSize);
-            slice.forEach(pf => {
-                const a = document.createElement('a');
-                a.href = "#";
-                a.textContent = pf;
-                profileContainer.appendChild(a);
-            });
-            profileIndex += chunkSize;
-            checkProfilesPagination();
-        }
-
-        function resetProfiles() {
-            profileIndex = 0;
-            profileContainer.innerHTML = '';
-            seeMoreProfileBtn.textContent = 'See More';
-            seeMoreProfileBtn.classList.remove('disabled');
-            seeMoreProfileBtn.style.cursor = 'pointer';
-            resetProfileBtn.style.display = 'none';
-            seeMoreProfileBtn.addEventListener('click', loadMoreProfiles);
-            loadMoreProfiles();
-        }
-
-        function checkProfilesPagination() {
-            if (profileIndex >= allProfiles.length) {
-                seeMoreProfileBtn.textContent = 'No more';
-                seeMoreProfileBtn.classList.add('disabled');
-                seeMoreProfileBtn.style.cursor = 'default';
-                resetProfileBtn.style.display = 'inline-block';
-                seeMoreProfileBtn.removeEventListener('click', loadMoreProfiles);
-            } else {
-                seeMoreProfileBtn.textContent = 'See More';
-                seeMoreProfileBtn.classList.remove('disabled');
-            }
-        }
-
-        // Functions for Filtering Topics and Profiles
-        function filterTopics() {
-            const q = searchTopicsInput.value.toLowerCase();
-            Array.from(topicContainer.querySelectorAll('a')).forEach(a => {
-                if (a.textContent.toLowerCase().includes(q)) {
-                    a.classList.remove('hide');
-                } else {
-                    a.classList.add('hide');
-                }
-            });
-        }
-
-        function filterProfiles() {
-            const q = searchProfilesInput.value.toLowerCase();
-            Array.from(profileContainer.querySelectorAll('a')).forEach(a => {
-                if (a.textContent.toLowerCase().includes(q)) {
-                    a.classList.remove('hide');
-                } else {
-                    a.classList.add('hide');
-                }
-            });
-        }
+        
     });
 </script>
-
 @endsection
