@@ -215,6 +215,45 @@ class PostController extends Controller
         });
         return response()->json($posts);
     }
+    // public function fetchPosts(Request $request)
+    // {
+    //     $sort = $request->get('sort', 'newest');
+    //     $page = $request->get('page', 1);
+    //     $topicName = $request->get('topic', null); // ← Tambahkan ini
+
+    //     // Mulai query
+    //     $query = Post::where('status', 1)
+    //         ->with(['user', 'images', 'comments.user', 'topics', 'likes']);
+
+    //     // Jika ada topicName, filter
+    //     if ($topicName) {
+    //         $query->whereHas('topics', function ($q) use ($topicName) {
+    //             $q->where('name', $topicName);
+    //         });
+    //     }
+
+    //     // Sorting
+    //     switch ($sort) {
+    //         case 'popular':
+    //             $query->orderBy('likes_count', 'desc');
+    //             break;
+    //         case 'oldest':
+    //             $query->orderBy('created_at', 'asc');
+    //             break;
+    //         case 'newest':
+    //         default:
+    //             $query->orderBy('created_at', 'desc');
+    //             break;
+    //     }
+
+        // Paginations
+    //     $posts = $query->paginate(10);
+    //     $posts->getCollection()->transform(function ($post) {
+    //         $post->liked = $post->likes->contains('user_id', auth()->id());
+    //         return $post;
+    //     });
+    //     return response()->json($posts);
+    // }
 
 
     public function getDetails($id)

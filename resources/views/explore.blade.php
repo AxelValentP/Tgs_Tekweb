@@ -13,6 +13,46 @@
         color: #ccc;
     }
 
+    .replycomment,
+    .submitcomment {
+        background-color: transparent;
+        border-radius: 5px;
+        border-style: solid;
+        border-width: 1px;
+        border-color: #666;
+        padding: 5px;
+        color: white;
+        transition: all ease 0.3s;
+    }
+
+    .submitcomment:hover {
+        background-color: rgba(0, 0, 0, 0.3);
+        color: white;
+    }
+
+    .user-list-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+        /* spasi antar user */
+    }
+
+    .user-avatar {
+        width: 32px;
+        /* lebar avatar */
+        height: 32px;
+        /* tinggi avatar */
+        border-radius: 50%;
+        /* bentuk bulat */
+        background-color: #666;
+        /* warna placeholder */
+        margin-right: 10px;
+        /* jarak antara avatar dan text */
+        flex-shrink: 0;
+        /* agar avatar tidak mengecil */
+    }
+
+
     .content-wrapper {
         display: flex;
         width: 100%;
@@ -900,8 +940,8 @@
         </div>
         <div class="replies-list" id="replies-${comment.id}" style="margin-left: 20px; margin-top: 10px;"></div>
         <form class="reply-form" id="reply-form-${comment.id}" style="display: none; margin-top: 10px;">
-            <input type="text" placeholder="Write a reply..." required />
-            <button type="submit">Reply</button>
+            <input type="text" class ="replycomment" placeholder="Write a reply..." required />
+            <button type="submit" class ="submitcomment">Reply</button>
         </form>
     `;
 
@@ -1093,18 +1133,6 @@
         seeMoreProfileBtn.addEventListener('click', loadMoreProfiles);
         resetProfileBtn.addEventListener('click', resetProfiles);
 
-        function loadMoreProfiles() {
-            const slice = allProfiles.slice(profileIndex, profileIndex + chunkSize);
-            slice.forEach(pf => {
-                const a = document.createElement('a');
-                a.href = "#";
-                a.textContent = pf;
-                profileContainer.appendChild(a);
-            });
-            profileIndex += chunkSize;
-            checkProfilesPagination();
-        }
-
         function resetProfiles() {
             profileIndex = 0;
             profileContainer.innerHTML = '';
@@ -1176,12 +1204,28 @@
         })
         .catch(err => console.error('Error fetching /topics/all-shuffled:', err));
 
-    // 2) Search event
+    let debounceTimeout = null;
+
+
     searchTopicsInput.addEventListener('input', function() {
         const query = this.value.trim();
 
+        // Clear request sebelumnya
+        clearTimeout(debounceTimeout);
+
+        // Debounce 300 ms
+        debounceTimeout = setTimeout(() => {
+            // Di sini baru fetch
+            doTopicSearch(query);
+        }, 150);
+    });
+
+    function doTopicSearch(query) {
+        topicContainer.innerHTML = '';
+        seeMoreTopicsBtn.style.display = 'none';
+        resetTopicsBtn.style.display = 'none';
+
         if (!query) {
-            // Query kosong -> kembali ke "default data" mode
             searchActiveTopics = false;
             topicIndex = 0; // Reset index
             topicContainer.innerHTML = '';
@@ -1191,19 +1235,8 @@
             return;
         }
 
-        // Jika ada query -> masuk "search mode"
-        searchActiveTopics = true;
-
-        // Hapus data di container
-        topicContainer.innerHTML = '';
-
-        // Sembunyikan "See More" & "Reset" saat search
-        seeMoreTopicsBtn.style.display = 'none';
-        resetTopicsBtn.style.display = 'none';
-
-        // Lakukan pencarian
         fetch('/topics/search?query=' + encodeURIComponent(query))
-            .then(response => response.json())
+            .then(res => res.json())
             .then(data => {
                 if (data.length === 0) {
                     topicContainer.innerHTML = '<p>No Topics Found.</p>';
@@ -1216,11 +1249,8 @@
                     });
                 }
             })
-            .catch(error => {
-                console.error('Error searching topics:', error);
-                topicContainer.innerHTML = '<p>Error loading topics.</p>';
-            });
-    });
+            .catch(err => console.error(err));
+    }
 
     // 3) Load more topics (default data)
     seeMoreTopicsBtn.addEventListener('click', loadMoreTopics);
@@ -1233,7 +1263,7 @@
         slice.forEach(t => {
             const a = document.createElement('a');
             a.href = '#';
-            a.textContent = t; // 't' karena di /topics/all-shuffled => pluck('name')
+            a.textContent = '# ' + t; // 't' karena di /topics/all-shuffled => pluck('name')
             topicContainer.appendChild(a);
         });
         topicIndex += topicChunkSize;
@@ -1283,10 +1313,26 @@
         })
         .catch(err => console.error('Error fetching /users/all-shuffled:', err));
 
-    // 2) Search event
+
+    // Variabel penampung timeout untuk debounce
+    let debounceProfilesTimeout = null;
+
+    // Ganti event 'input' seperti ini
     searchProfilesInput.addEventListener('input', function() {
+        // Bersihkan timeout sebelumnya (jika ada)
+        clearTimeout(debounceProfilesTimeout);
+
+        // Simpan nilai query
         const query = this.value.trim();
 
+        // Tunda eksekusi fetch selama 300ms setelah user berhenti mengetik
+        debounceProfilesTimeout = setTimeout(() => {
+            doUserSearch(query);
+        }, 150);
+    });
+
+    // Fungsi yang benar-benar melakukan fetch ke server
+    function doUserSearch(query) {
         if (!query) {
             // Query kosong -> kembali ke "default data" mode
             searchActiveUsers = false;
@@ -1313,18 +1359,42 @@
                     profileContainer.innerHTML = '<p>No Profiles Found.</p>';
                 } else {
                     data.forEach(user => {
-                        const a = document.createElement('a');
-                        a.href = '#';
-                        a.textContent = user.name;
-                        profileContainer.appendChild(a);
+                        // Bungkus satu user dalam div "user-list-item"
+                        const userItem = document.createElement('div');
+                        userItem.classList.add('user-list-item');
+
+                        // Buat elemen avatar
+                        const avatar = document.createElement('div');
+                        avatar.classList.add('user-avatar');
+
+                        // Atau, kalau nanti ada sumber gambar: 
+                        // const avatar = document.createElement('img');
+                        // avatar.src = user.avatar_url || 'default-avatar.png';
+                        // avatar.classList.add('user-avatar');
+
+                        // Buat elemen link atau teks nama user
+                        const userNameLink = document.createElement('a');
+                        userNameLink.href = "#";
+                        userNameLink.textContent = user.name;
+                        userNameLink.style.color = '#ccc';
+                        userNameLink.style.textDecoration = 'none';
+
+                        // Rangkai: avatar + nama
+                        userItem.appendChild(avatar);
+                        userItem.appendChild(userNameLink);
+
+                        // Masukkan ke container
+                        profileContainer.appendChild(userItem);
                     });
+
                 }
             })
             .catch(error => {
                 console.error('Error searching users:', error);
                 profileContainer.innerHTML = '<p>Error loading profiles.</p>';
             });
-    });
+    }
+
 
     // 3) Load more profiles (default data)
     seeMoreProfileBtn.addEventListener('click', loadMoreProfiles);
@@ -1334,10 +1404,27 @@
 
         const slice = allUsers.slice(profileIndex, profileIndex + userChunkSize);
         slice.forEach(u => {
-            const a = document.createElement('a');
-            a.href = '#';
-            a.textContent = u;
-            profileContainer.appendChild(a);
+            // Buat container user
+            const userItem = document.createElement('div');
+            userItem.classList.add('user-list-item');
+
+            // Avatar bulat
+            const avatar = document.createElement('div');
+            avatar.classList.add('user-avatar');
+
+            // Teks user
+            const userNameLink = document.createElement('a');
+            userNameLink.href = '#';
+            userNameLink.textContent = u;
+            userNameLink.style.color = '#ccc';
+            userNameLink.style.textDecoration = 'none';
+
+            // Rangkai
+            userItem.appendChild(avatar);
+            userItem.appendChild(userNameLink);
+
+            // Masukkan ke profileContainer
+            profileContainer.appendChild(userItem);
         });
         profileIndex += userChunkSize;
 
