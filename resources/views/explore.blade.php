@@ -584,6 +584,8 @@
         <div class="divider"></div>
 
         <div id="postContainer"></div>
+        <div id="scrollTrigger" style="height: 1px;"></div>
+
         <div class="see-more-posts-container">
             <span class="see-more-btn" id="seeMorePostsBtn">See More Posts</span>
             <span class="reset-btn" id="resetPostsBtn" style="display:none;">Reset</span>
@@ -649,21 +651,31 @@
     window.addEventListener('load', function() {
         document.querySelector('.content-wrapper').classList.add('loaded');
     });
+    seeMorePostsBtn.style.display = 'none';
+    resetPostsBtn.style.display = 'none';
 </script>
 <script>
     // Ensure that the DOM is fully loaded before executing scripts
     document.addEventListener('DOMContentLoaded', () => {
         // Select Elements
         const postContainer = document.getElementById('postContainer');
+        const scrollTrigger = document.getElementById('scrollTrigger');
+
         const seeMorePostsBtn = document.getElementById('seeMorePostsBtn');
         const resetPostsBtn = document.getElementById('resetPostsBtn');
         const sortSelect = document.getElementById('sortPostsSelect');
 
         // Pagination and Sorting Variables
+        // let currentPage = 1;
+        // let currentSort = 'newest';
+        // let totalPages = 1;
+        // const chunkSize = 3; // You can adjust this based on your preference
+
         let currentPage = 1;
         let currentSort = 'newest';
+        let currentFilter = 'showall';
         let totalPages = 1;
-        const chunkSize = 3; // You can adjust this based on your preference
+        let isFetching = false; // Prevent duplicate fetch calls
 
         // Modal Elements
         const commentModal = document.getElementById('commentModal');
@@ -675,8 +687,11 @@
         //FILTER UNTUK FOLLOW/ENGGA POSTS
         const followSelect = document.getElementById('followFilter');
 
+
+
         // Initial Load
-        fetchPosts(currentSort, currentPage);
+        // fetchPosts(currentSort, currentPage);
+        fetchPosts(currentSort, currentPage, false, currentFilter);
 
         // Event Listeners
         followSelect.addEventListener('change', () => {
@@ -741,12 +756,15 @@
 
         commentForm.addEventListener('submit', addComment);
 
-        // Function to Fetch Posts from the Server
-        // function fetchPosts(sort, page, append = false) {
-        //     fetch(`/posts?sort=${sort}&page=${page}`)
+        // function fetchPosts(sort, page, append = false, filter = 'showall') {
+        //     fetch(`/posts?sort=${sort}&page=${page}&filter=${filter}`)
         //         .then(response => response.json())
         //         .then(data => {
         //             totalPages = data.last_page;
+
+        //             if (!append) {
+        //                 postContainer.innerHTML = ''; // Clear container if not appending
+        //             }
 
         //             data.data.forEach(post => {
         //                 const postElement = createPostElement(post);
@@ -768,6 +786,89 @@
         //         .catch(error => console.error('Error fetching posts:', error));
         // }
 
+
+        // // Function to Create a Post Element
+        // function createPostElement(post) {
+        //     const card = document.createElement('div');
+        //     card.classList.add('post-card');
+        //     card.dataset.postId = post.id;
+
+        //     // Post Header
+        //     const header = document.createElement('div');
+        //     header.classList.add('post-header');
+        //     header.innerHTML = `
+        //         <img src="${post.user.profile_image}" alt="User Profile Picture" class="profile-pic">
+        //         <div class="username">${post.user.name}</div>
+        //         <div class="time">${timeAgo(new Date(post.created_at))}</div>
+        //     `;
+        //     card.appendChild(header);
+
+        //     // Image Slider
+        //     const slider = document.createElement('div');
+        //     slider.classList.add('image-slider');
+
+        //     post.images.forEach((image, index) => {
+        //         const img = document.createElement('img');
+        //         img.src = image.path; // Assuming 'path' contains the image URL
+        //         if (index === 0) img.classList.add('active');
+        //         slider.appendChild(img);
+        //     });
+
+        //     if (post.images.length > 1) {
+        //         const prevBtn = document.createElement('div');
+        //         prevBtn.classList.add('slider-btn', 'slider-prev');
+        //         prevBtn.innerHTML = '&#10094;';
+        //         const nextBtn = document.createElement('div');
+        //         nextBtn.classList.add('slider-btn', 'slider-next');
+        //         nextBtn.innerHTML = '&#10095;';
+
+        //         prevBtn.addEventListener('click', () => slideImages(slider, -1));
+        //         nextBtn.addEventListener('click', () => slideImages(slider, 1));
+
+        //         slider.appendChild(prevBtn);
+        //         slider.appendChild(nextBtn);
+        //     }
+
+        //     // Like on Double Click
+        //     slider.addEventListener('dblclick', () => {
+        //         toggleLike(post.id, card);
+        //     });
+
+        //     card.appendChild(slider);
+
+        //     // Post Footer
+        //     const footer = document.createElement('div');
+        //     footer.classList.add('post-footer');
+
+        //     const desc = document.createElement('div');
+        //     desc.classList.add('description');
+        //     desc.textContent = post.description;
+        //     footer.appendChild(desc);
+
+        //     const actions = document.createElement('div');
+        //     actions.classList.add('actions');
+        //     updateActionsHTML(actions, post);
+        //     footer.appendChild(actions);
+
+        //     card.appendChild(footer);
+
+        //     // Event Listeners for Actions
+        //     const commentBtn = actions.querySelector('.comment-btn');
+        //     commentBtn.addEventListener('click', () => {
+        //         currentPostId = post.id;
+        //         showComments(post.id);
+        //         commentModal.classList.add('show');
+        //     });
+
+        //     const likeBtn = actions.querySelector('.like-btn');
+        //     likeBtn.addEventListener('click', () => {
+        //         toggleLike(post.id, card);
+        //     });
+
+        //     return card;
+        // }
+
+        // Function to Fetch Posts
         function fetchPosts(sort, page, append = false, filter = 'showall') {
             fetch(`/posts?sort=${sort}&page=${page}&filter=${filter}`)
                 .then(response => response.json())
@@ -783,21 +884,15 @@
                         postContainer.appendChild(postElement);
                     });
 
-                    // Update "See More" and "Reset" Buttons
+                    // Check if more pages are available
                     if (currentPage >= totalPages) {
-                        seeMorePostsBtn.textContent = "No more";
-                        seeMorePostsBtn.classList.add('disabled');
-                        seeMorePostsBtn.style.cursor = 'default';
-                        resetPostsBtn.style.display = 'inline-block';
+                        observer.unobserve(scrollTrigger); // Stop observing when no more pages
                     } else {
-                        seeMorePostsBtn.textContent = "See More Posts";
-                        seeMorePostsBtn.classList.remove('disabled');
-                        seeMorePostsBtn.style.cursor = 'pointer';
+                        observer.observe(scrollTrigger); // Re-attach observer for next page
                     }
                 })
                 .catch(error => console.error('Error fetching posts:', error));
         }
-
 
         // Function to Create a Post Element
         function createPostElement(post) {
@@ -809,16 +904,15 @@
             const header = document.createElement('div');
             header.classList.add('post-header');
             header.innerHTML = `
-                <img src="${post.user.profile_image}" alt="User Profile Picture" class="profile-pic">
-                <div class="username">${post.user.name}</div>
-                <div class="time">${timeAgo(new Date(post.created_at))}</div>
-            `;
+        <img src="${post.user.profile_image}" alt="User Profile Picture" class="profile-pic">
+        <div class="username">${post.user.name}</div>
+        <div class="time">${timeAgo(new Date(post.created_at))}</div>
+    `;
             card.appendChild(header);
 
             // Image Slider
             const slider = document.createElement('div');
             slider.classList.add('image-slider');
-
             post.images.forEach((image, index) => {
                 const img = document.createElement('img');
                 img.src = image.path; // Assuming 'path' contains the image URL
@@ -830,22 +924,18 @@
                 const prevBtn = document.createElement('div');
                 prevBtn.classList.add('slider-btn', 'slider-prev');
                 prevBtn.innerHTML = '&#10094;';
+                prevBtn.addEventListener('click', () => slideImages(slider, -1));
+
                 const nextBtn = document.createElement('div');
                 nextBtn.classList.add('slider-btn', 'slider-next');
                 nextBtn.innerHTML = '&#10095;';
-
-                prevBtn.addEventListener('click', () => slideImages(slider, -1));
                 nextBtn.addEventListener('click', () => slideImages(slider, 1));
 
                 slider.appendChild(prevBtn);
                 slider.appendChild(nextBtn);
             }
 
-            // Like on Double Click
-            slider.addEventListener('dblclick', () => {
-                toggleLike(post.id, card);
-            });
-
+            slider.addEventListener('dblclick', () => toggleLike(post.id, card));
             card.appendChild(slider);
 
             // Post Footer
@@ -873,12 +963,25 @@
             });
 
             const likeBtn = actions.querySelector('.like-btn');
-            likeBtn.addEventListener('click', () => {
-                toggleLike(post.id, card);
-            });
+            likeBtn.addEventListener('click', () => toggleLike(post.id, card));
 
             return card;
         }
+
+        // Infinite Scroll Setup
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    currentPage++;
+                    fetchPosts(currentSort, currentPage, true, followSelect.value);
+                }
+            });
+        });
+
+        // Start observing the trigger element
+        observer.observe(scrollTrigger);
+
 
         // Function to Update Actions HTML
         function updateActionsHTML(actions, post) {
