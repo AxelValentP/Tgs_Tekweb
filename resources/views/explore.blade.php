@@ -11,9 +11,9 @@
         background: #111;
         font-family: sans-serif;
         color: #ccc;
-       
+
     }
-   
+
     .content-wrapper {
         display: flex;
         width: 100%;
@@ -92,13 +92,20 @@
         align-items: center;
         padding: 0.5rem;
     }
+
     .post-header .profile-pic {
-        width: 40px; /* Adjust size as needed */
-        height: 40px; /* Match width for a perfect circle */
-        border-radius: 50%; /* This creates the circular frame */
-        margin-right: 0.5rem; /* Space between the image and username */
-        object-fit: cover; /* Ensures the image fits well */
-        border: 2px solid #333; /* Optional border for aesthetics */
+        width: 40px;
+        /* Adjust size as needed */
+        height: 40px;
+        /* Match width for a perfect circle */
+        border-radius: 50%;
+        /* This creates the circular frame */
+        margin-right: 0.5rem;
+        /* Space between the image and username */
+        object-fit: cover;
+        /* Ensures the image fits well */
+        border: 2px solid #333;
+        /* Optional border for aesthetics */
     }
 
     /* Avatar dihilangkan, hanya username dan waktu */
@@ -485,73 +492,74 @@
     .comment-form button:hover {
         background: #555;
     }
+
     .comment-item-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.comment-user {
-    display: flex;
-    align-items: center;
-    font-weight: bold;
-    color: #ddd;
-}
-
-.like-btn {
-    display: flex;
-    align-items: center;
-    margin-left: 10px;
-    cursor: pointer;
-    color: #aaa;
-    font-size: 0.9rem;
-}
-
-.like-btn.liked i {
-    color: red;
-}
-
-.like-btn:hover {
-    color: #fff;
-}
-
-.comment-time {
-    font-size: 0.8rem;
-    color: #aaa;
-}
-
-.comment-text {
-    margin-top: 5px;
-    color: #ccc;
-    font-size: 0.9rem;
-    line-height: 1.4;
-}
-
-.comment-actions {
-    margin-top: 10px;
-}
-
-.reply-btn {
-    background: none;
-    border: none;
-    color: #008cba;
-    cursor: pointer;
-    font-size: 0.9rem;
-    padding: 0;
-}
-
-.reply-btn:hover {
-    text-decoration: underline;
-}
-
-.content-wrapper{
-    opacity: 0;
-    transition: opacity 1s ease-in;
-}
-.content-wrapper.loaded {
-      opacity: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
 
+    .comment-user {
+        display: flex;
+        align-items: center;
+        font-weight: bold;
+        color: #ddd;
+    }
+
+    .like-btn {
+        display: flex;
+        align-items: center;
+        margin-left: 10px;
+        cursor: pointer;
+        color: #aaa;
+        font-size: 0.9rem;
+    }
+
+    .like-btn.liked i {
+        color: red;
+    }
+
+    .like-btn:hover {
+        color: #fff;
+    }
+
+    .comment-time {
+        font-size: 0.8rem;
+        color: #aaa;
+    }
+
+    .comment-text {
+        margin-top: 5px;
+        color: #ccc;
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+
+    .comment-actions {
+        margin-top: 10px;
+    }
+
+    .reply-btn {
+        background: none;
+        border: none;
+        color: #008cba;
+        cursor: pointer;
+        font-size: 0.9rem;
+        padding: 0;
+    }
+
+    .reply-btn:hover {
+        text-decoration: underline;
+    }
+
+    .content-wrapper {
+        opacity: 0;
+        transition: opacity 1s ease-in;
+    }
+
+    .content-wrapper.loaded {
+        opacity: 1;
+    }
 </style>
 
 <div class="content-wrapper">
@@ -630,8 +638,8 @@
 </div>
 
 <script>
-     window.addEventListener('load', function() {
-      document.querySelector('.content-wrapper').classList.add('loaded');
+    window.addEventListener('load', function() {
+        document.querySelector('.content-wrapper').classList.add('loaded');
     });
 </script>
 <script>
@@ -872,40 +880,40 @@
         // Function to Show Comments in Modal
         // Show comments in modal
         function showComments(postId) {
-    currentPostId = postId; // Set the current post ID
-    commentList.innerHTML = ''; // Clear previous comments
-    commentModal.classList.add('show'); // Show the modal
+            currentPostId = postId; // Set the current post ID
+            commentList.innerHTML = ''; // Clear previous comments
+            commentModal.classList.add('show'); // Show the modal
 
-    // Fetch comments for the specific post
-    fetch(`/posts/${postId}/comments`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Failed to fetch comments');
-            }
-            return response.json();
-        })
-        .then(comments => {
-            if (comments.length === 0) {
-                commentList.innerHTML = '<p>No comments yet. Be the first to comment!</p>';
-            } else {
-                comments.forEach(comment => {
-                    const commentElement = createCommentWithReplies(comment);
-                    commentList.appendChild(commentElement);
+            // Fetch comments for the specific post
+            fetch(`/posts/${postId}/comments`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch comments');
+                    }
+                    return response.json();
+                })
+                .then(comments => {
+                    if (comments.length === 0) {
+                        commentList.innerHTML = '<p>No comments yet. Be the first to comment!</p>';
+                    } else {
+                        comments.forEach(comment => {
+                            const commentElement = createCommentWithReplies(comment);
+                            commentList.appendChild(commentElement);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching comments:', error);
+                    commentList.innerHTML = '<p>Failed to load comments. Please try again later.</p>';
                 });
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching comments:', error);
-            commentList.innerHTML = '<p>Failed to load comments. Please try again later.</p>';
-        });
-}
+        }
 
 
-// Create a comment element with reply functionality
-function createCommentWithReplies(comment) {
-    const commentItem = document.createElement('div');
-    commentItem.classList.add('comment-item');
-    commentItem.innerHTML = `
+        // Create a comment element with reply functionality
+        function createCommentWithReplies(comment) {
+            const commentItem = document.createElement('div');
+            commentItem.classList.add('comment-item');
+            commentItem.innerHTML = `
         <div class="comment-item-header">
             <span class="comment-user">
                 ${comment.user.name}
@@ -926,95 +934,97 @@ function createCommentWithReplies(comment) {
         </form>
     `;
 
-    const replyBtn = commentItem.querySelector('.reply-btn');
-    const replyForm = commentItem.querySelector(`#reply-form-${comment.id}`);
-    const repliesList = commentItem.querySelector(`#replies-${comment.id}`);
-    const likeBtn = commentItem.querySelector('.like-btn');
+            const replyBtn = commentItem.querySelector('.reply-btn');
+            const replyForm = commentItem.querySelector(`#reply-form-${comment.id}`);
+            const repliesList = commentItem.querySelector(`#replies-${comment.id}`);
+            const likeBtn = commentItem.querySelector('.like-btn');
 
-    // Toggle reply form visibility
-    replyBtn.addEventListener('click', () => {
-        replyForm.style.display = replyForm.style.display === 'none' ? 'block' : 'none';
-        if (replyForm.style.display === 'block') {
-            fetchReplies(comment.id, repliesList);
+            // Toggle reply form visibility
+            replyBtn.addEventListener('click', () => {
+                replyForm.style.display = replyForm.style.display === 'none' ? 'block' : 'none';
+                if (replyForm.style.display === 'block') {
+                    fetchReplies(comment.id, repliesList);
+                }
+            });
+
+            // Handle reply submission
+            replyForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const input = replyForm.querySelector('input');
+                const replyText = input.value.trim();
+                if (!replyText) return;
+
+                fetch(`/comments/${comment.id}/replies`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            text: replyText
+                        }),
+                    })
+                    .then(response => response.json())
+                    .then(reply => {
+                        input.value = '';
+                        fetchReplies(comment.id, repliesList); // Refresh replies after adding
+                    })
+                    .catch(error => console.error('Error adding reply:', error));
+            });
+
+            // Handle comment like
+            likeBtn.addEventListener('click', () => {
+                const commentId = likeBtn.dataset.commentId;
+
+                fetch(`/comments/${commentId}/like`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json',
+                        },
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Update like button and count
+                        likeBtn.classList.toggle('liked');
+                        likeBtn.innerHTML = `<i class="lni lni-heart"></i> ${data.likes_count}`;
+                    })
+                    .catch(error => console.error('Error liking comment:', error));
+            });
+
+            return commentItem;
         }
-    });
-
-    // Handle reply submission
-    replyForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const input = replyForm.querySelector('input');
-        const replyText = input.value.trim();
-        if (!replyText) return;
-
-        fetch(`/comments/${comment.id}/replies`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ text: replyText }),
-        })
-            .then(response => response.json())
-            .then(reply => {
-                input.value = '';
-                fetchReplies(comment.id, repliesList); // Refresh replies after adding
-            })
-            .catch(error => console.error('Error adding reply:', error));
-    });
-
-    // Handle comment like
-    likeBtn.addEventListener('click', () => {
-        const commentId = likeBtn.dataset.commentId;
-
-        fetch(`/comments/${commentId}/like`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json',
-            },
-        })
-            .then(response => response.json())
-            .then(data => {
-                // Update like button and count
-                likeBtn.classList.toggle('liked');
-                likeBtn.innerHTML = `<i class="lni lni-heart"></i> ${data.likes_count}`;
-            })
-            .catch(error => console.error('Error liking comment:', error));
-    });
-
-    return commentItem;
-}
 
 
 
-// Fetch replies for a specific comment
-function fetchReplies(commentId, repliesList) {
-    fetch(`/comments/${commentId}/replies`)
-        .then(response => response.json())
-        .then(replies => {
-            repliesList.innerHTML = ''; // Clear existing replies
-            if (replies.length === 0) {
-                repliesList.innerHTML = '<p>No replies yet.</p>';
-            } else {
-                replies.forEach(reply => {
-                    const replyElement = document.createElement('div');
-                    replyElement.classList.add('comment-item');
-                    replyElement.innerHTML = `
+        // Fetch replies for a specific comment
+        function fetchReplies(commentId, repliesList) {
+            fetch(`/comments/${commentId}/replies`)
+                .then(response => response.json())
+                .then(replies => {
+                    repliesList.innerHTML = ''; // Clear existing replies
+                    if (replies.length === 0) {
+                        repliesList.innerHTML = '<p>No replies yet.</p>';
+                    } else {
+                        replies.forEach(reply => {
+                            const replyElement = document.createElement('div');
+                            replyElement.classList.add('comment-item');
+                            replyElement.innerHTML = `
                         <div class="comment-item-header">
                             <span class="comment-user">${reply.user.name}</span>
                             <span class="comment-time">${new Date(reply.created_at).toLocaleString()}</span>
                         </div>
                         <div class="comment-text">${reply.text}</div>
                     `;
-                    repliesList.appendChild(replyElement);
+                            repliesList.appendChild(replyElement);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching replies:', error);
+                    repliesList.innerHTML = '<p>Failed to load replies. Please try again later.</p>';
                 });
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching replies:', error);
-            repliesList.innerHTML = '<p>Failed to load replies. Please try again later.</p>';
-        });
-}
+        }
 
         // Function to Add a Comment
         function addComment(e) {
@@ -1171,8 +1181,6 @@ function fetchReplies(commentId, repliesList) {
             });
         }
     });
-
-   
 </script>
 
 @endsection
