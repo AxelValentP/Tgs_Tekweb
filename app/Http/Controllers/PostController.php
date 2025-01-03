@@ -12,6 +12,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Comment;
 use App\Models\Like;
+use App\Models\User;
+use App\Http\Controllers\FollowController;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -183,38 +185,84 @@ class PostController extends Controller
         return view('homee', compact('posts'));
     }
 
+    // public function fetchPosts(Request $request)
+    // {
+    //     $sort = $request->get('sort', 'newest'); // Default to 'newest' if not provided
+
+    //     // Start building the query with the status filter
+    //     $query = Post::where('status', 1) // Only fetch public posts
+    //         ->with(['user', 'images', 'comments.user']);
+
+    //     // Apply sorting based on the request
+    //     switch ($sort) {
+    //         case 'popular':
+    //             $query->orderBy('likes_count', 'desc');
+    //             break;
+
+    //         case 'oldest':
+    //             $query->orderBy('created_at', 'asc');
+    //             break;
+
+    //         case 'newest':
+    //         default:
+    //             $query->orderBy('created_at', 'desc');
+    //             break;
+    //     }
+
+    //     // Implement pagination (fetch 10 posts per page)
+    //     $posts = $query->paginate(10);
+    //     $posts->getCollection()->transform(function ($post) {
+    //         $post->liked = $post->likes->contains('user_id', auth()->id());
+    //         return $post;
+    //     });
+    //     return response()->json($posts);
+    // }
+
+
+
     public function fetchPosts(Request $request)
     {
-        $sort = $request->get('sort', 'newest'); // Default to 'newest' if not provided
 
-        // Start building the query with the status filter
-        $query = Post::where('status', 1) // Only fetch public posts
+        $followedUserIds = DB::table('user_followers')
+            ->where('follower_id', auth()->id())
+            ->pluck('user_id');
+
+        $sort = $request->get('sort', 'newest');
+        $filter = $request->get('filter', 'showall');
+
+        $query = Post::where('status', 1) // Only public posts
             ->with(['user', 'images', 'comments.user']);
 
-        // Apply sorting based on the request
+        // Apply filter for followed users
+        if ($filter === 'followed') {
+            $query->whereIn('user_id', $followedUserIds);
+        }
+
+
+        // Apply sorting
         switch ($sort) {
             case 'popular':
                 $query->orderBy('likes_count', 'desc');
                 break;
-
             case 'oldest':
                 $query->orderBy('created_at', 'asc');
                 break;
-
             case 'newest':
             default:
                 $query->orderBy('created_at', 'desc');
                 break;
         }
 
-        // Implement pagination (fetch 10 posts per page)
+        // Paginate posts
         $posts = $query->paginate(10);
         $posts->getCollection()->transform(function ($post) {
             $post->liked = $post->likes->contains('user_id', auth()->id());
             return $post;
         });
+
         return response()->json($posts);
     }
+
 
 
     public function getDetails($id)

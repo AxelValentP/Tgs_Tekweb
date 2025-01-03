@@ -9,6 +9,7 @@ use App\Http\Controllers\SignupController;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\TopicController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\ExploreController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\NotificationController;
@@ -71,7 +72,7 @@ Route::middleware(['auth'])->group(function () {
     // Delete Post via AJAX
     Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
     Route::get('/posts/{postId}/comments', [CommentController::class, 'fetchComments'])->name('comments.fetch');
-   
+
 
     //follow unfoll
     Route::post('/follow/{user}', [FollowController::class, 'follow'])->name('follow.ajax');
@@ -80,8 +81,6 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/unfollow/{user}', [FollowController::class, 'unfollow'])->name('unfollow.ajax');
 
     Route::get('/search-users', [ProfileController::class, 'searchUsers'])->name('users.search');
-
-    
 });
 //Profile
 
@@ -90,9 +89,9 @@ Route::get('/profile', [ProfileController::class, 'show'])
     ->middleware('auth') // Ensure only authenticated users can access
     ->name('profile.show');
 
-    Route::post('/profile/update', [ProfileController::class, 'update'])
+Route::post('/profile/update', [ProfileController::class, 'update'])
     ->middleware('auth')
-    ->name('profile.update');    
+    ->name('profile.update');
 
 // Login & Logout Routes
 Route::middleware('guest')->group(function () {
@@ -108,6 +107,7 @@ Route::middleware('guest')->group(function () {
 Route::post('logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
 
 Route::get('/posts', [PostController::class, 'fetchPosts'])->name('posts.fetch');
+
 Route::get('/posts/{id}/details', [PostController::class, 'getDetails']);
 
 
@@ -149,3 +149,21 @@ Route::get('/db-test', function () {
         return 'Database connection failed: ' . $e->getMessage();
     }
 });
+
+// Ambil semua topik 
+Route::get('/topics/all', [TopicController::class, 'indexAll']);
+
+// Ambil semua topik tapi diacak
+Route::get('/topics/all-shuffled', [TopicController::class, 'indexAllShuffled']);
+
+// Search topik
+Route::get('/topics/search', [TopicController::class, 'search']);
+
+// Ambil semua user
+Route::get('/users/all', [UserController::class, 'indexAll']);
+
+// Ambil semua user acak
+Route::get('/users/all-shuffled', [UserController::class, 'indexAllShuffled']);
+
+// Search user
+Route::get('/users/search', [UserController::class, 'search']);
