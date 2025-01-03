@@ -21,11 +21,9 @@
     }
 
     .main-content {
-        
+        flex: 1;
         box-sizing: border-box;
         background: #111;
-        margin-left: 2rem !important;
-
     }
 
     #userPostsContainer {
@@ -426,15 +424,8 @@
     .menu-btn:hover {
         color: #fff;
     }
-    .content-wrapper{
-    opacity: 0;
-    transition: opacity 1s ease-in;
-    }
-.content-wrapper.loaded {
-      opacity: 1;
-    }
-</style>
 
+</style>
 
 <div class="content-wrapper">
     <div class="main-content">
@@ -500,11 +491,7 @@
         </div>
     </div>
 </div>
-<script>
-     window.addEventListener('load', function() {
-      document.querySelector('.content-wrapper').classList.add('loaded');
-    });
-</script>
+
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const editModal = document.getElementById('editModal');

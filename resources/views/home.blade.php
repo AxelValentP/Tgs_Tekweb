@@ -114,15 +114,6 @@
                 height: 100%;
             }
         }
-
-        .content-wrapper{
-    opacity: 0;
-    transition: opacity 1s ease-in;
-}
-.content-wrapper.loaded {
-      opacity: 1;
-    }
-
     </style>
 </head>
 
@@ -133,7 +124,6 @@
             <source src="video/video.mp4" type="video/mp4">
         </video>
 
-        <div class="content-wrapper">
         <nav class="bar">
             <a href="index.html">
                 <h1>Toddit</h1>
@@ -143,7 +133,7 @@
                 <button type="submit" class="strong">SIGN IN</button>
             </form>
 
-            
+
         </nav>
         <div class="content">
             <form method="GET" action="{{ route('signup') }}">
@@ -154,14 +144,7 @@
 
         </div>
     </div>
-        </div>
-        
 
 </body>
-<script>
-     window.addEventListener('load', function() {
-      document.querySelector('.content-wrapper').classList.add('loaded');
-    });
-</script>
 
 </html>

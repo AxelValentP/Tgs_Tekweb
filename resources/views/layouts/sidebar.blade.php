@@ -18,7 +18,8 @@
             margin: 0;
             font-family: sans-serif;
             background: #111;
-            color: #ccc; 
+            color: #ccc;
+            height: 2000px; /* Example for scroll */
         }
 
         .main-content {
@@ -265,12 +266,7 @@
     <i class="lni lni-alarm" aria-hidden="true"></i>
     <span class="nav-text">NOTIFICATIONS</span>
     <span class="notification-badge" style="display: none;" aria-label="Unread notifications count">0</span>
-    
 </a>
-<a href="{{ route('profile.show') }}" class="nav-item {{ Request::is('profile') ? 'active' : '' }}" aria-label="Profile">
-            <i class="lni lni-user" aria-hidden="true"></i>
-            <span class="nav-text">PROFILE</span>
-        </a>
 
 
         </div>

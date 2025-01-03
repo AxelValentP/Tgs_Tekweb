@@ -56,7 +56,7 @@
     </style>
 </head>
 <body>
-    @include('layouts.sidebar') 
+    @include('layouts.sidebar') <!-- Pastikan sidebar memiliki logika .sidebar-open toggling pada body -->
 
     <div class="main-content">
         @yield('content')

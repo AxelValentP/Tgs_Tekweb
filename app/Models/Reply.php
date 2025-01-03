@@ -20,17 +20,4 @@ class Reply extends Model
     {
         return $this->belongsTo(User::class);
     }
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($reply) {
-            $comment = $reply->comment; // Assumes a relationship exists
-            if ($reply->user_id === $comment->user_id) {
-                $reply->seen = true;
-            } else {
-                $reply->seen = false;
-            }
-        });
-    }
 }

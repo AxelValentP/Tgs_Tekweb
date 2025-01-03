@@ -21,8 +21,6 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'profile_image', 
-        'description',   
     ];
 
     /**
@@ -58,27 +56,5 @@ class User extends Authenticatable
     public function comments()
     {
         return $this->hasMany(Comment::class);
-    }
-    public function following()
-    {
-        return $this->belongsToMany(
-            User::class,
-            'user_followers',
-            'follower_id',
-            'user_id'
-        );
-    }
-
-    /**
-     * Users that are following this user.
-     */
-    public function followers()
-    {
-        return $this->belongsToMany(
-            User::class,
-            'user_followers',
-            'user_id',
-            'follower_id'
-        );
     }
 }
