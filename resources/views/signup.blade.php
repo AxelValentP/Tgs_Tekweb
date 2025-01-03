@@ -14,6 +14,11 @@
             position: relative;
             overflow: hidden;
             margin: 0;
+            opacity: 0;
+    transition: opacity 0.5s ease-in;
+  }
+  body.loaded {
+            opacity: 1;
         }
         .video-background {
             position: absolute;
@@ -139,8 +144,12 @@
     </div>
 
     <script>
-       
+      // Once DOM is fully loaded, add the 'loaded' class to fade in
+      window.addEventListener('load', function() {
+          document.body.classList.add('loaded');
+      });
     </script>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

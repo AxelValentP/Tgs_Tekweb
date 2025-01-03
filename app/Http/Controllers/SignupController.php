@@ -39,6 +39,6 @@ public function processSignup(Request $request)
     Auth::login($user);
 
     // Redirect to the app page after successful registration
-    return redirect()->route('explore');
+    return redirect()->route('load');
 }
 }

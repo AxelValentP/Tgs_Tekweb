@@ -19,4 +19,18 @@ class CommentLike extends Model
     {
         return $this->belongsTo(User::class);
     }
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($commentLike) {
+            $comment = $commentLike->comment; // Assumes a relationship exists
+            if ($commentLike->user_id === $comment->user_id) {
+                $commentLike->seen = true;
+            } else {
+                $commentLike->seen = false;
+            }
+        });
+    }
+    
 }
