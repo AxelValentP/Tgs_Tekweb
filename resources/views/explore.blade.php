@@ -566,6 +566,10 @@
     <div class="main-feed">
         <div class="feed-header">
             <h2>Newest</h2>
+            <select id="followFilter">
+                <option value="showall">Show All</option>
+                <option value="followed">Followed Only</option>
+            </select>
             <select id="sortPostsSelect">
                 <option value="newest">Newest</option>
                 <option value="popular">Popular</option>
@@ -664,6 +668,9 @@
         const commentForm = document.getElementById('commentForm');
         let currentPostId = null;
 
+        //FILTER UNTUK FOLLOW/ENGGA POSTS
+        const followSelect = document.getElementById('followFilter');   
+
         // Initial Load
         fetchPosts(currentSort, currentPage);
         const currentUser = {
@@ -673,11 +680,28 @@
 
         // Event Listeners
         sortSelect.addEventListener('change', () => {
-            currentSort = sortSelect.value;
-            currentPage = 1;
-            postContainer.innerHTML = '';
-            fetchPosts(currentSort, currentPage);
-            resetPostsBtn.style.display = 'none';
+            const currentFilter = followSelect.value; // Get the current filter value
+            currentSort = sortSelect.value; // Get the current sort value
+            currentPage = 1; // Reset to the first page
+            postContainer.innerHTML = ''; // Clear the current posts
+            fetchPosts(currentSort, currentPage, false, currentFilter); // Fetch posts with sorting
+
+            // Update the header title dynamically
+            const headerTitle = document.querySelector('.feed-header h2');
+            switch (currentSort) {
+                case 'popular':
+                    headerTitle.textContent = 'Popular';
+                    break;
+                case 'oldest':
+                    headerTitle.textContent = 'Oldest';
+                    break;
+                case 'newest':
+                default:
+                    headerTitle.textContent = 'Newest';
+                    break;
+            }
+
+            resetPostsBtn.style.display = 'none'; // Hide the reset button if applicable
         });
 
         seeMorePostsBtn.addEventListener('click', () => {
@@ -1239,7 +1263,296 @@ function fetchReplies(commentId, repliesList) {
         }
     });
 
-   
+     // ========== TOPICS & PROFILES SECTION =========== //
+
+    // =========================================================
+    // =============== TOPICS SECTION ==========================
+    // =========================================================
+    const searchTopicsInput = document.getElementById('searchTopicsInput');
+    const topicContainer = document.getElementById('topicContainer');
+    const seeMoreTopicsBtn = document.getElementById('seeMoreTopicsBtn');
+    const resetTopicsBtn = document.getElementById('resetTopicsBtn');
+
+    let allTopics = []; // Menampung semua topics acak dari server
+    let topicIndex = 0; // Penanda index "See More"
+    const topicChunkSize = 3; // Jumlah item per "See More"
+    let searchActiveTopics = false; // Apakah user sedang melakukan search?
+
+    // 1) Fetch data default (topics shuffled)
+    fetch('/topics/all-shuffled')
+        .then(res => res.json())
+        .then(data => {
+            allTopics = data;
+            loadMoreTopics(); // Tampilkan 3 item awal
+        })
+        .catch(err => console.error('Error fetching /topics/all-shuffled:', err));
+
+    let debounceTimeout = null;
+
+
+    searchTopicsInput.addEventListener('input', function() {
+        const query = this.value.trim();
+
+        // Clear request sebelumnya
+        clearTimeout(debounceTimeout);
+
+        // Debounce 300 ms
+        debounceTimeout = setTimeout(() => {
+            // Di sini baru fetch
+            doTopicSearch(query);
+        }, 150);
+    });
+
+    function doTopicSearch(query) {
+        topicContainer.innerHTML = '';
+        seeMoreTopicsBtn.style.display = 'none';
+        resetTopicsBtn.style.display = 'none';
+
+        if (!query) {
+            searchActiveTopics = false;
+            topicIndex = 0; // Reset index
+            topicContainer.innerHTML = '';
+            seeMoreTopicsBtn.style.display = 'inline-block'; // Tampilkan "See More"
+            resetTopicsBtn.style.display = 'none'; // Sembunyikan reset
+            loadMoreTopics(); // Munculkan 3 item awal
+            return;
+        }
+
+        fetch('/topics/search?query=' + encodeURIComponent(query))
+            .then(res => res.json())
+            .then(data => {
+                if (data.length === 0) {
+                    topicContainer.innerHTML = '<p>No Topics Found.</p>';
+                } else {
+                    data.forEach(topic => {
+                        const a = document.createElement('a');
+                        a.href = '#';
+                        a.textContent = '#' + topic.name;
+                        topicContainer.appendChild(a);
+                    });
+                }
+            })
+            .catch(err => console.error(err));
+    }
+
+    // 3) Load more topics (default data)
+    seeMoreTopicsBtn.addEventListener('click', loadMoreTopics);
+
+    function loadMoreTopics() {
+        // Jika user sedang search, batalkan "See More"
+        if (searchActiveTopics) return;
+
+        const slice = allTopics.slice(topicIndex, topicIndex + topicChunkSize);
+        slice.forEach(t => {
+            const a = document.createElement('a');
+            a.href = '#';
+            a.textContent = '# ' + t; // 't' karena di /topics/all-shuffled => pluck('name')
+            topicContainer.appendChild(a);
+        });
+        topicIndex += topicChunkSize;
+
+        if (topicContainer.children.length > 3) {
+            resetTopicsBtn.style.display = 'inline-block'; // Show reset button
+        }
+
+        // Jika sudah melebihi total data
+        if (topicIndex >= allTopics.length) {
+            seeMoreTopicsBtn.textContent = 'No more';
+            seeMoreTopicsBtn.classList.add('disabled');
+            seeMoreTopicsBtn.style.cursor = 'default';
+            resetTopicsBtn.style.display = 'inline-block';
+        }
+    }
+
+    // 4) Reset button
+    resetTopicsBtn.addEventListener('click', () => {
+        // Kembalikan ke awal
+        seeMoreTopicsBtn.textContent = 'See More';
+        seeMoreTopicsBtn.classList.remove('disabled');
+        seeMoreTopicsBtn.style.cursor = 'pointer';
+        resetTopicsBtn.style.display = 'none';
+
+        topicIndex = 0;
+        topicContainer.innerHTML = '';
+        loadMoreTopics();
+    });
+
+
+    // =========================================================
+    // =============== USERS SECTION ===========================
+    // =========================================================
+    const searchProfilesInput = document.getElementById('searchProfilesInput');
+    const profileContainer = document.getElementById('profileContainer');
+    const seeMoreProfileBtn = document.getElementById('seeMoreProfileBtn');
+    const resetProfileBtn = document.getElementById('resetProfileBtn');
+
+    let allUsers = []; // Menampung semua users acak
+    let profileIndex = 0; // Penanda index "See More"
+    const userChunkSize = 3;
+    let searchActiveUsers = false; // Apakah user sedang melakukan search?
+
+    // 1) Fetch data default (users shuffled)
+    fetch('/users/all-shuffled')
+        .then(res => res.json())
+        .then(data => {
+            allUsers = data;
+            loadMoreProfiles();
+        })
+        .catch(err => console.error('Error fetching /users/all-shuffled:', err));
+
+
+    // Variabel penampung timeout untuk debounce
+    let debounceProfilesTimeout = null;
+
+    // Ganti event 'input' seperti ini
+    searchProfilesInput.addEventListener('input', function() {
+        // Bersihkan timeout sebelumnya (jika ada)
+        clearTimeout(debounceProfilesTimeout);
+
+        // Simpan nilai query
+        const query = this.value.trim();
+
+        // Tunda eksekusi fetch selama 300ms setelah user berhenti mengetik
+        debounceProfilesTimeout = setTimeout(() => {
+            doUserSearch(query);
+        }, 150);
+    });
+
+    // Fungsi yang benar-benar melakukan fetch ke server
+    function doUserSearch(query) {
+        if (!query) {
+            // Query kosong -> kembali ke "default data" mode
+            searchActiveUsers = false;
+            profileIndex = 0;
+            profileContainer.innerHTML = '';
+            seeMoreProfileBtn.style.display = 'inline-block';
+            resetProfileBtn.style.display = 'none';
+            loadMoreProfiles();
+            return;
+        }
+
+        // Ada query -> "search mode"
+        searchActiveUsers = true;
+
+        profileContainer.innerHTML = '';
+        seeMoreProfileBtn.style.display = 'none';
+        resetProfileBtn.style.display = 'none';
+
+        // Lakukan pencarian
+        fetch('/users/search?query=' + encodeURIComponent(query))
+            .then(response => response.json())
+            .then(data => {
+                if (data.length === 0) {
+                    profileContainer.innerHTML = '<p>No Profiles Found.</p>';
+                } else {
+                    data.forEach(user => {
+                        // Bungkus satu user dalam div "user-list-item"
+                        const userItem = document.createElement('div');
+                        userItem.classList.add('user-list-item');
+
+                        // Buat elemen avatar
+                        const avatar = document.createElement('div');
+                        avatar.classList.add('user-avatar');
+
+                        // Atau, kalau nanti ada sumber gambar: 
+                        // const avatar = document.createElement('img');
+                        // avatar.src = user.avatar_url || 'default-avatar.png';
+                        // avatar.classList.add('user-avatar');
+
+                        // Buat elemen link atau teks nama user
+                        const userNameLink = document.createElement('a');
+                        userNameLink.href = "#";
+                        userNameLink.textContent = user.name;
+                        userNameLink.style.color = '#ccc';
+                        userNameLink.style.textDecoration = 'none';
+
+                        // Rangkai: avatar + nama
+                        userItem.appendChild(avatar);
+                        userItem.appendChild(userNameLink);
+
+                        // Masukkan ke container
+                        profileContainer.appendChild(userItem);
+                    });
+
+                }
+            })
+            .catch(error => {
+                console.error('Error searching users:', error);
+                profileContainer.innerHTML = '<p>Error loading profiles.</p>';
+            });
+    }
+
+
+    // 3) Load more profiles (default data)
+    seeMoreProfileBtn.addEventListener('click', loadMoreProfiles);
+
+    function loadMoreProfiles() {
+        if (searchActiveUsers) return;
+
+        const slice = allUsers.slice(profileIndex, profileIndex + userChunkSize);
+        slice.forEach(user => {
+            // Create the user item container
+            const userItem = document.createElement('div');
+            userItem.classList.add('user-list-item');
+            userItem.style.display = 'flex';
+            userItem.style.alignItems = 'center';
+            userItem.style.marginBottom = '10px';
+
+            // Create the avatar element (using user's profile image)
+            const avatar = document.createElement('img');
+            avatar.src = user.profile_image || 'https://via.placeholder.com/40';
+            avatar.alt = user.name;
+            avatar.style.width = '40px';
+            avatar.style.height = '40px';
+            avatar.style.borderRadius = '50%'; // Make it circular
+            avatar.style.marginRight = '10px'; // Space between image and name
+
+            // Create the user name link
+            const userNameLink = document.createElement('a');
+            userNameLink.href = '#'; // Adjust this if you have a profile page link
+            userNameLink.textContent = user.name;
+            userNameLink.style.color = '#ccc';
+            userNameLink.style.textDecoration = 'none';
+
+            // Assemble the user item
+            userItem.appendChild(avatar);
+            userItem.appendChild(userNameLink);
+
+            // Append the user item to the profile container
+            profileContainer.appendChild(userItem);
+        });
+
+        profileIndex += userChunkSize;
+
+        // Show the reset button if more than 3 profiles are displayed
+        if (profileContainer.children.length > 3) {
+            resetProfileBtn.style.display = 'inline-block';
+        }
+
+        // Check if all profiles have been loaded
+        if (profileIndex >= allUsers.length) {
+            seeMoreProfileBtn.textContent = 'No more';
+            seeMoreProfileBtn.classList.add('disabled');
+            seeMoreProfileBtn.style.cursor = 'default';
+        } else {
+            seeMoreProfileBtn.textContent = 'See More';
+            seeMoreProfileBtn.classList.remove('disabled');
+            seeMoreProfileBtn.style.cursor = 'pointer';
+        }
+    }
+
+
+    // 4) Reset button
+    resetProfileBtn.addEventListener('click', () => {
+        seeMoreProfileBtn.textContent = 'See More';
+        seeMoreProfileBtn.classList.remove('disabled');
+        seeMoreProfileBtn.style.cursor = 'pointer';
+        resetProfileBtn.style.display = 'none';
+
+        profileIndex = 0;
+        profileContainer.innerHTML = '';
+        loadMoreProfiles();
+    });
 </script>
 
 @endsection
