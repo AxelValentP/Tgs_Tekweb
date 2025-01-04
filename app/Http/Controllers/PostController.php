@@ -238,7 +238,6 @@ class PostController extends Controller
             $query->whereIn('user_id', $followedUserIds);
         }
 
-
         // Apply sorting
         switch ($sort) {
             case 'popular':
