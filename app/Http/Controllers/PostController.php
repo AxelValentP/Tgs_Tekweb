@@ -244,47 +244,47 @@ private function isValidImage($url)
 
 
     public function fetchPosts(Request $request)
-    {
+        {
+            $filter = $request->get('filter', 'showall'); // Get filter value, default to 'showall'
+            $sort = $request->get('sort', 'newest'); // Get sort value, default to 'newest'
 
-        $followedUserIds = DB::table('user_followers')
-            ->where('follower_id', auth()->id())
-            ->pluck('user_id');
+            $query = Post::where('status', 1) // Only public posts
+                ->with(['user', 'images', 'comments.user']);
 
-        $sort = $request->get('sort', 'newest');
-        $filter = $request->get('filter', 'showall');
+            // Apply filter for followed users
+            if ($filter === 'followed') {
+                $followedUserIds = DB::table('user_followers')
+                    ->where('follower_id', auth()->id())
+                    ->pluck('user_id');
 
-        $query = Post::where('status', 1) // Only public posts
-            ->with(['user', 'images', 'comments.user']);
+                $query->whereIn('user_id', $followedUserIds);
+            }
 
-        // Apply filter for followed users
-        if ($filter === 'followed') {
-            $query->whereIn('user_id', $followedUserIds);
-        }
+            // Apply sorting
+            switch ($sort) {
+                case 'popular':
+                    $query->orderBy('likes_count', 'desc');
+                    break;
+                case 'oldest':
+                    $query->orderBy('created_at', 'asc');
+                    break;
+                case 'newest':
+                default:
+                    $query->orderBy('created_at', 'desc');
+                    break;
+            }
 
-        // Apply sorting
-        switch ($sort) {
-            case 'popular':
-                $query->orderBy('likes_count', 'desc');
-                break;
-            case 'oldest':
-                $query->orderBy('created_at', 'asc');
-                break;
-            case 'newest':
-            default:
-                $query->orderBy('created_at', 'desc');
-                break;
-        }
+    // Paginate posts
+    $posts = $query->paginate(9);
+    $posts->getCollection()->transform(function ($post) {
+        $post->liked = $post->likes->contains('user_id', auth()->id());
+        return $post;
+    });
 
-        // Paginate posts
-        $posts = $query->paginate(10);
-        $posts->getCollection()->transform(function ($post) {
-            $post->liked = $post->likes->contains('user_id', auth()->id());
-            return $post;
-        });
+    return response()->json($posts);
+}
 
-        return response()->json($posts);
-    }
-
+//markkkkkk
 
 
     public function getDetails($id)

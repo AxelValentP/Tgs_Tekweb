@@ -703,6 +703,15 @@
 
             resetPostsBtn.style.display = 'none'; // Hide the reset button if applicable
         });
+        // Event Listener for Follow Filter Dropdown
+        followSelect.addEventListener('change', () => {
+            const currentFilter = followSelect.value; // Get the current filter value
+            currentSort = sortSelect.value; // Keep the current sort value
+            currentPage = 1; // Reset to the first page
+            postContainer.innerHTML = ''; // Clear the current posts
+            fetchPosts(currentSort, currentPage, false, currentFilter); // Fetch posts with sorting and filtering
+        });
+
 
         seeMorePostsBtn.addEventListener('click', () => {
             if (currentPage < totalPages) {
@@ -733,31 +742,37 @@
         commentForm.addEventListener('submit', addComment);
 
         // Function to Fetch Posts from the Server
-        function fetchPosts(sort, page, append = false) {
-            fetch(`/posts?sort=${sort}&page=${page}`)
-                .then(response => response.json())
-                .then(data => {
-                    totalPages = data.last_page;
+        // Function to Fetch Posts from the Server
+function fetchPosts(sort, page, append = false, filter = 'showall') {
+    fetch(`/posts?sort=${sort}&page=${page}&filter=${filter}`)
+        .then(response => response.json())
+        .then(data => {
+            totalPages = data.last_page;
 
-                    data.data.forEach(post => {
-                        const postElement = createPostElement(post);
-                        postContainer.appendChild(postElement);
-                    });
+            if (!append) {
+                postContainer.innerHTML = ''; // Clear posts if not appending
+            }
 
-                    // Update "See More" and "Reset" Buttons
-                    if (currentPage >= totalPages) {
-                        seeMorePostsBtn.textContent = "No more";
-                        seeMorePostsBtn.classList.add('disabled');
-                        seeMorePostsBtn.style.cursor = 'default';
-                        resetPostsBtn.style.display = 'inline-block';
-                    } else {
-                        seeMorePostsBtn.textContent = "See More Posts";
-                        seeMorePostsBtn.classList.remove('disabled');
-                        seeMorePostsBtn.style.cursor = 'pointer';
-                    }
-                })
-                .catch(error => console.error('Error fetching posts:', error));
-        }
+            data.data.forEach(post => {
+                const postElement = createPostElement(post);
+                postContainer.appendChild(postElement);
+            });
+
+            // Update "See More" and "Reset" Buttons
+            if (currentPage >= totalPages) {
+                seeMorePostsBtn.textContent = "No more";
+                seeMorePostsBtn.classList.add('disabled');
+                seeMorePostsBtn.style.cursor = 'default';
+                resetPostsBtn.style.display = 'inline-block';
+            } else {
+                seeMorePostsBtn.textContent = "See More Posts";
+                seeMorePostsBtn.classList.remove('disabled');
+                seeMorePostsBtn.style.cursor = 'pointer';
+            }
+        })
+        .catch(error => console.error('Error fetching posts:', error));
+}
+
 
         // Function to Create a Post Element
         function createPostElement(post) {
