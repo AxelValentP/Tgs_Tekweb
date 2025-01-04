@@ -11,8 +11,9 @@
         background: #111;
         font-family: sans-serif;
         color: #ccc;
+       
     }
-
+   
     .content-wrapper {
         display: flex;
         width: 100%;
@@ -90,6 +91,22 @@
         display: flex;
         align-items: center;
         padding: 0.5rem;
+    }
+    .post-header .profile-pic {
+        width: 40px; /* Adjust size as needed */
+        height: 40px; /* Match width for a perfect circle */
+        border-radius: 50%; /* This creates the circular frame */
+        margin-right: 0.5rem; /* Space between the image and username */
+        object-fit: cover; /* Ensures the image fits well */
+        border: 2px solid #333; /* Optional border for aesthetics */
+    }
+    .comment-item-header .comment-user .profile-pic{
+        width: 40px; /* Adjust size as needed */
+        height: 40px; /* Match width for a perfect circle */
+        border-radius: 50%; /* This creates the circular frame */
+        margin-right: 0.5rem; /* Space between the image and username */
+        object-fit: cover; /* Ensures the image fits well */
+        border: 2px solid #333; /* Optional border for aesthetics */
     }
 
     /* Avatar dihilangkan, hanya username dan waktu */
@@ -476,6 +493,73 @@
     .comment-form button:hover {
         background: #555;
     }
+    .comment-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.comment-user {
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    color: #ddd;
+}
+
+.like-btn {
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
+    cursor: pointer;
+    color: #aaa;
+    font-size: 0.9rem;
+}
+
+.like-btn.liked i {
+    color: red;
+}
+
+.like-btn:hover {
+    color: #fff;
+}
+
+.comment-time {
+    font-size: 0.8rem;
+    color: #aaa;
+}
+
+.comment-text {
+    margin-top: 5px;
+    color: #ccc;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.comment-actions {
+    margin-top: 10px;
+}
+
+.reply-btn {
+    background: none;
+    border: none;
+    color: #008cba;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 0;
+}
+
+.reply-btn:hover {
+    text-decoration: underline;
+}
+
+.content-wrapper{
+    opacity: 0;
+    transition: opacity 1s ease-in;
+}
+.content-wrapper.loaded {
+      opacity: 1;
+    }
+
 </style>
 
 <div class="content-wrapper">
@@ -553,7 +637,11 @@
     </div>
 </div>
 
-
+<script>
+     window.addEventListener('load', function() {
+      document.querySelector('.content-wrapper').classList.add('loaded');
+    });
+</script>
 <script>
     // Ensure that the DOM is fully loaded before executing scripts
     document.addEventListener('DOMContentLoaded', () => {
@@ -578,6 +666,10 @@
 
         // Initial Load
         fetchPosts(currentSort, currentPage);
+        const currentUser = {
+            id: {{ auth()->user()->id }},
+            name: "{{ auth()->user()->name }}"
+        };
 
         // Event Listeners
         sortSelect.addEventListener('change', () => {
@@ -653,10 +745,10 @@
             const header = document.createElement('div');
             header.classList.add('post-header');
             header.innerHTML = `
-            <div class="username">${post.user.name}</div>
-            <div class="time">${timeAgo(new Date(post.created_at))}</div>
-            <div class="menu-btn">⋮</div>
-        `;
+                <img src="${post.user.profile_image}" alt="User Profile Picture" class="profile-pic"  onerror="this.onerror=null; this.src='https://salonlfc.com/wp-content/uploads/2018/01/image-not-found-1-scaled.png'; this.alt='Profile Image Not Found'; this.style.border='2px solid red'; this.title='Profile Image Not Found';">
+                <div class="username">${post.user.name}</div>
+                <div class="time">${timeAgo(new Date(post.created_at))}</div>
+            `;
             card.appendChild(header);
 
             // Image Slider
@@ -820,14 +912,22 @@
         });
 }
 
+
 // Create a comment element with reply functionality
 function createCommentWithReplies(comment) {
     const commentItem = document.createElement('div');
     commentItem.classList.add('comment-item');
     commentItem.innerHTML = `
         <div class="comment-item-header">
-            <span class="comment-user">${comment.user.name}</span>
+            <span class="comment-user">
+                <img src="${comment.user.profile_image}" alt="User Profile Picture" class="profile-pic">
+                ${comment.user.name}
+                <span class="like-btn ${comment.liked ? 'liked' : ''}" data-comment-id="${comment.id}">
+                    <i class="lni lni-heart"></i> ${comment.likes_count || 0}
+                </span>
+            </span>
             <span class="comment-time">${new Date(comment.created_at).toLocaleString()}</span>
+            ${comment.user.id === currentUser.id ? '<button class="delete-comment-btn">Delete</button>' : ''}
         </div>
         <div class="comment-text">${comment.text}</div>
         <div class="comment-actions">
@@ -843,6 +943,7 @@ function createCommentWithReplies(comment) {
     const replyBtn = commentItem.querySelector('.reply-btn');
     const replyForm = commentItem.querySelector(`#reply-form-${comment.id}`);
     const repliesList = commentItem.querySelector(`#replies-${comment.id}`);
+    const likeBtn = commentItem.querySelector('.like-btn');
 
     // Toggle reply form visibility
     replyBtn.addEventListener('click', () => {
@@ -875,8 +976,75 @@ function createCommentWithReplies(comment) {
             .catch(error => console.error('Error adding reply:', error));
     });
 
+    // Handle comment like
+    likeBtn.addEventListener('click', () => {
+        const commentId = likeBtn.dataset.commentId;
+
+        fetch(`/comments/${commentId}/like`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json',
+            },
+        })
+            .then(response => response.json())
+            .then(data => {
+                // Update like button and count
+                likeBtn.classList.toggle('liked');
+                likeBtn.innerHTML = `<i class="lni lni-heart"></i> ${data.likes_count}`;
+            })
+            .catch(error => console.error('Error liking comment:', error));
+    });
+    // Delete comment button handler
+    const deleteCommentBtn = commentItem.querySelector('.delete-comment-btn');
+    if (deleteCommentBtn) {
+        deleteCommentBtn.addEventListener('click', () => deleteComment(comment.id));
+    }
+
     return commentItem;
 }
+
+function deleteComment(commentId) {
+    fetch(`/comments/${commentId}`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to delete comment');
+        }
+        return response.json();
+    })
+    .then(data => {
+        showComments(currentPostId); // Refresh comments
+    })
+    .catch(error => console.error('Error deleting comment:', error));
+}
+
+function deleteReply(replyId) {
+    fetch(`/replies/${replyId}`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to delete reply');
+        }
+        return response.json();
+    })
+    .then(data => {
+        showComments(currentPostId); // Refresh comments
+    })
+    .catch(error => console.error('Error deleting reply:', error));
+}
+
+
 
 // Fetch replies for a specific comment
 function fetchReplies(commentId, repliesList) {
@@ -892,11 +1060,19 @@ function fetchReplies(commentId, repliesList) {
                     replyElement.classList.add('comment-item');
                     replyElement.innerHTML = `
                         <div class="comment-item-header">
-                            <span class="comment-user">${reply.user.name}</span>
+                            <span class="comment-user">
+                                <img src="${reply.user.profile_image}" alt="User Profile Picture" class="profile-pic">
+                                ${reply.user.name}
+                                </span>
                             <span class="comment-time">${new Date(reply.created_at).toLocaleString()}</span>
+                            ${currentUser && reply.user.id === currentUser.id ? '<button class="delete-reply-btn">Delete</button>' : ''}
                         </div>
                         <div class="comment-text">${reply.text}</div>
                     `;
+                    const deleteReplyBtn = replyElement.querySelector('.delete-reply-btn');
+                    if (deleteReplyBtn) {
+                        deleteReplyBtn.addEventListener('click', () => deleteReply(reply.id));
+                    }
                     repliesList.appendChild(replyElement);
                 });
             }
@@ -1062,6 +1238,8 @@ function fetchReplies(commentId, repliesList) {
             });
         }
     });
+
+   
 </script>
 
 @endsection

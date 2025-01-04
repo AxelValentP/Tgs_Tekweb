@@ -156,6 +156,13 @@
         background: #444;
         cursor: pointer;
     }
+    .content-wrapper{
+    opacity: 0;
+    transition: opacity 1s ease-in;
+}
+.content-wrapper.loaded {
+      opacity: 1;
+    }
 </style>
 
 <div class="content-wrapper">
@@ -223,6 +230,11 @@
         </div>
     </div>
 </div>
+<script>
+     window.addEventListener('load', function() {
+      document.querySelector('.content-wrapper').classList.add('loaded');
+    });
+</script>
 
 <script>
     // Topic Suggestions

@@ -21,9 +21,10 @@
     }
 
     .main-content {
-        flex: 1;
+        
         box-sizing: border-box;
         background: #111;
+        margin-left: 2rem !important;
     }
 
     #userPostsContainer {
@@ -424,12 +425,97 @@
     .menu-btn:hover {
         color: #fff;
     }
+    .content-wrapper{
+    opacity: 0;
+    transition: opacity 1s ease-in;
+    }
+.content-wrapper.loaded {
+      opacity: 1;
+    }
+
+    #confirmModal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
+
+#confirmModal.show {
+    display: flex;
+}
+
+#confirmModal .modal {
+    background: #222;
+    border: 1px solid #333;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    color: #ccc;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+#confirmModal .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #444;
+    padding-bottom: 0.5rem;
+}
+
+#confirmModal .modal-body {
+    font-size: 1rem;
+}
+
+#confirmModal .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+#confirmModal .btn-cancel {
+    background: #800;
+    color: #fff;
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+#confirmModal .btn-cancel:hover {
+    background: #900;
+}
+
+#confirmModal .btn-proceed {
+    background: #4CAF50;
+    color: #fff;
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+#confirmModal .btn-proceed:hover {
+    background: #45a049;
+}
 
 </style>
+
 
 <div class="content-wrapper">
     <div class="main-content">
         <h2>Your Posts</h2>
+        <p style="color: gray;">For post details, you can click onto the image!</p>
         <div id="userPostsContainer">
             @forelse($posts as $post)
                 <div class="post-card" data-post-id="{{ $post->id }}">
@@ -491,7 +577,26 @@
         </div>
     </div>
 </div>
+<div class="modal-overlay" id="confirmModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Confirmation</h3>
+        </div>
+        <div class="modal-body">
+            <p id="confirmMessage">Are you sure you want to proceed?</p>
+        </div>
+        <div class="modal-actions">
+            <button id="cancelConfirmBtn" class="btn-cancel">Cancel</button>
+            <button id="proceedConfirmBtn" class="btn-proceed">Proceed</button>
+        </div>
+    </div>
+</div>
 
+<script>
+     window.addEventListener('load', function() {
+      document.querySelector('.content-wrapper').classList.add('loaded');
+    });
+</script>
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const editModal = document.getElementById('editModal');
@@ -501,6 +606,31 @@
         const editCaption = document.getElementById('editCaption');
         let currentEditPostId = null;
         let currentEditCard = null;
+
+        const confirmModal = document.getElementById('confirmModal');
+    const confirmMessage = document.getElementById('confirmMessage');
+    const cancelConfirmBtn = document.getElementById('cancelConfirmBtn');
+    const proceedConfirmBtn = document.getElementById('proceedConfirmBtn');
+
+    let confirmCallback = null;
+
+    const openConfirmModal = (message, callback) => {
+        confirmMessage.textContent = message;
+        confirmCallback = callback;
+        confirmModal.classList.add('show');
+    };
+
+    const closeConfirmModal = () => {
+        confirmModal.classList.remove('show');
+        confirmCallback = null;
+    };
+
+    cancelConfirmBtn.addEventListener('click', closeConfirmModal);
+
+    proceedConfirmBtn.addEventListener('click', () => {
+        if (confirmCallback) confirmCallback();
+        closeConfirmModal();
+    });
 
         // Open Edit Modal
         document.querySelectorAll('.edit-btn').forEach(button => {
@@ -531,8 +661,8 @@
         saveEditBtn.addEventListener('click', () => {
             const newDescription = editCaption.value.trim();
 
-            if(newDescription === '') {
-                alert('Caption cannot be empty.');
+            if (newDescription === '') {
+                openConfirmModal('Caption cannot be empty.', () => {});
                 return;
             }
 
@@ -547,7 +677,7 @@
                 body: JSON.stringify({ description: newDescription })
             })
             .then(response => {
-                if(response.ok){
+                if (response.ok) {
                     return response.json();
                 } else {
                     throw new Error('Failed to update the post.');
@@ -557,58 +687,85 @@
                 // Update the caption in the UI
                 const descDiv = currentEditCard.querySelector('.description');
                 descDiv.textContent = data.description;
-                // Append "(Edited)" if not already present
-                if(!descDiv.innerHTML.includes('(Edited)')){
+                if (!descDiv.innerHTML.includes('(Edited)')) {
                     const editedSpan = document.createElement('span');
                     editedSpan.classList.add('edited');
                     editedSpan.textContent = ' (Edited)';
                     descDiv.appendChild(editedSpan);
                 }
-                // Close the modal
                 closeModal();
             })
             .catch(error => {
                 console.error(error);
-                alert('An error occurred while updating the post.');
             });
         });
 
         // Delete Post
         document.querySelectorAll('.delete-btn').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const card = e.target.closest('.post-card');
-                const postId = card.getAttribute('data-post-id');
+        button.addEventListener('click', (e) => {
+            const card = e.target.closest('.post-card');
+            const postId = card.getAttribute('data-post-id');
 
-                if(confirm('Are you sure you want to delete this post?')){
-                    // Send AJAX request to delete the post
-                    fetch(`/posts/${postId}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    })
-                    .then(response => {
-                        if(response.ok){
-                            return response.json();
-                        } else {
-                            throw new Error('Failed to delete the post.');
-                        }
-                    })
-                    .then(data => {
-                        // Remove the post card from the UI
-                        card.remove();
-                        alert(data.message);
-                    })
-                    .catch(error => {
-                        console.error(error);
-                        alert('An error occurred while deleting the post.');
-                    });
-                }
+            openConfirmModal('Are you sure you want to delete this post?', () => {
+                fetch(`/posts/${postId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error('Failed to delete the post.');
+                    }
+                })
+                .then(data => {
+                    card.remove();
+                })
+                .catch(error => {
+                    console.error(error);
+                });
             });
         });
     });
+
+        // Toggle Post Status
+        document.querySelectorAll('.status-badge').forEach((badge) => {
+        badge.addEventListener('click', (e) => {
+            const postId = badge.getAttribute('data-post-id');
+            const currentStatus = badge.textContent.trim().toLowerCase();
+
+            openConfirmModal(`Do you want to make this post ${currentStatus === 'public' ? 'private' : 'public'}?`, () => {
+                fetch(`/posts/${postId}/toggle-status`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    },
+                    body: JSON.stringify({ status: currentStatus === 'public' ? 'private' : 'public' }),
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error('Failed to update status');
+                    }
+                })
+                .then(data => {
+                    badge.textContent = data.status === 1 ? 'Public' : 'Private';
+                    badge.classList.toggle('status-public', data.status === 1);
+                    badge.classList.toggle('status-private', data.status === 0);
+                })
+                .catch(error => {
+                    console.error('Error updating status:', error);
+                });
+            });
+        });
+    });
+});
 </script>
 
 <div class="modal-overlay" id="postModalOverlay" data-post-id="">
@@ -872,8 +1029,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const postId = badge.getAttribute('data-post-id');
             const currentStatus = badge.textContent.trim().toLowerCase(); // Get current status
 
-            // Confirm action
-            const confirmation = confirm(`Do you want to make this post ${currentStatus === 'public' ? 'private' : 'public'}?`);
+     
+            
             if (!confirmation) return;
 
             // Send AJAX request to update the status

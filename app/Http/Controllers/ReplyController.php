@@ -28,4 +28,19 @@ class ReplyController extends Controller
         $replies = Reply::where('comment_id', $commentId)->with('user')->latest()->get();
         return response()->json($replies);
     }
+    public function deleteReply($replyId)
+    {
+        $reply = Reply::findOrFail($replyId);
+
+        // Check if the logged-in user is the owner of the reply
+        if ($reply->user_id !== auth()->id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        // Delete the reply
+        $reply->delete();
+
+        return response()->json(['message' => 'Reply deleted successfully']);
+    }
+
 }

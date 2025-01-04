@@ -37,7 +37,7 @@ public function showLoginForm()
         // Attempt to log the user in with the given credentials
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password], $request->remember)) {
             // Redirect user to intended page after successful login
-            return redirect()->intended(route('explore')); // replace with the route you want to redirect to
+            return redirect()->intended(route('load')); // replace with the route you want to redirect to
         }
 
         // If authentication fails, redirect back with error message

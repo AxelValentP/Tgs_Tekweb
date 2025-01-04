@@ -13,6 +13,8 @@ use App\Http\Controllers\ExploreController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Notifications\Notification;
+use App\Http\Controllers\FollowController;
+use App\Http\Controllers\ProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,6 +36,11 @@ Route::get('/explore', function () {
     return view('explore');
 })->name('explore');
 
+
+
+Route::get('/load', function () {
+    return view('load');
+})->name('load');
 // Route::get('/notification', function () {
 //     return view('notification');
 // })->name('notification');
@@ -64,7 +71,35 @@ Route::middleware(['auth'])->group(function () {
     // Delete Post via AJAX
     Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
     Route::get('/posts/{postId}/comments', [CommentController::class, 'fetchComments'])->name('comments.fetch');
+   
+
+    //follow unfoll
+    Route::post('/follow/{user}', [FollowController::class, 'follow'])->name('follow.ajax');
+
+    // Unfollow a user
+    Route::delete('/unfollow/{user}', [FollowController::class, 'unfollow'])->name('unfollow.ajax');
+
+    Route::get('/search-users', [ProfileController::class, 'searchUsers'])->name('users.search');
+    
+    Route::get('/get-followers', [FollowController::class, 'getFollowers']);
+
+    // Get the current user's following
+    Route::get('/get-following', [FollowController::class, 'getFollowing']);
+
+    Route::delete('/comments/{commentId}', [CommentController::class, 'deleteComment'])->middleware('auth');
+    Route::delete('/replies/{replyId}', [ReplyController::class, 'deleteReply'])->middleware('auth');
+
 });
+//Profile
+
+
+Route::get('/profile', [ProfileController::class, 'show'])
+    ->middleware('auth') // Ensure only authenticated users can access
+    ->name('profile.show');
+
+    Route::post('/profile/update', [ProfileController::class, 'update'])
+    ->middleware('auth')
+    ->name('profile.update');    
 
 // Login & Logout Routes
 Route::middleware('guest')->group(function() {
@@ -91,7 +126,7 @@ Route::patch('/comments/{id}/unhide', [PostController::class, 'unhideComment'])-
 
 
 //Notification
-Route::get('/notifications/unread-count', [PostController::class, 'getUnreadCount'])->name('notifications.unread-count');
+Route::get('/notifications/unread-count', [NotificationController::class, 'getUnreadCount'])->name('notifications.unread-count');
 Route::get('/notification', [NotificationController::class, 'getNotifications'])->name('notification');
 Route::post('/clear-notifications', [NotificationController::class, 'clearNotifications'])->name('clear.notifications');
 
@@ -100,6 +135,11 @@ Route::post('/clear-notifications', [NotificationController::class, 'clearNotifi
 Route::patch('/posts/{post}/toggle-status', [PostController::class, 'toggleStatus'])->name('posts.toggleStatus');
 Route::post('/comments/{commentId}/replies', [ReplyController::class, 'store'])->name('replies.store');
     Route::get('/comments/{commentId}/replies', [ReplyController::class, 'fetchReplies'])->name('replies.fetch');
+
+
+
+Route::post('/follow/{user}', [FollowController::class, 'follow'])->middleware('auth')->name('follow');
+Route::delete('/unfollow/{user}', [FollowController::class, 'unfollow'])->middleware('auth')->name('unfollow');
 
 
 // Database test route (for checking DB connection)

@@ -31,59 +31,82 @@ class PostController extends Controller
      * Store a newly created post in storage.
      */
     public function store(StorePostRequest $request)
-    {
+{
+    // Validate the request data
+    $validated = $request->validate([
+        'description' => 'required|string|max:255',
+        'status' => 'required|in:public,private',
+        'topic' => 'nullable|string|max:255',
+        'image_links.*' => 'nullable|url',
+    ]);
 
-
-        // Validate the request data (optional if StorePostRequest already validates it)
-        $validated = $request->validate([
-            'description' => 'required|string|max:255',
-            'status' => 'required|in:public,private',
-            'topic' => 'nullable|string|max:255',
-            'image_links.*' => 'nullable|url',
-        ]);
-
-        // Step 1: Create the post
-        $post = Post::create([
-            'user_id' => auth()->id(),
-            'description' => $request->description,
-            'status' => $request->status === 'public' ? 1 : 0, // Map public/private to 1/0
-            'likes_count' => 0, // Initialize likes_count
-        ]);
-
-        // Step 2: Handle topics
-        $topicIds = [];
-
-        if (!empty($request->topic)) {
-            $topicName = trim($request->topic);
-            if ($topicName !== '') {
-                $topic = Topic::firstOrCreate(
-                    ['name' => $topicName],
-                    ['slug' => Str::slug($topicName)]
-                );
-                $topicIds[] = $topic->id;
+    // Validate image links
+    if (!empty($request->image_links)) {
+        foreach ($request->image_links as $key => $imageLink) {
+            if (!$this->isValidImage($imageLink)) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(["image_links.$key" => 'Invalid image link.']);
             }
         }
-
-        // Attach topics to the post
-        if (!empty($topicIds)) {
-            $post->topics()->sync($topicIds);
-        }
-
-        // Step 3: Handle images
-        if (!empty($request->image_links)) {
-            foreach ($request->image_links as $imageLink) {
-                Image::create([
-                    'post_id' => $post->id,
-                    'path' => $imageLink,
-                ]);
-            }
-        }
-
-        // Redirect back with success message
-        return redirect()->route('upload')->with('success', 'Post created successfully!');
     }
 
+    // Step 1: Create the post
+    $post = Post::create([
+        'user_id' => auth()->id(),
+        'description' => $request->description,
+        'status' => $request->status === 'public' ? 1 : 0,
+        'likes_count' => 0,
+    ]);
 
+    // Step 2: Handle topics
+    $topicIds = [];
+
+    if (!empty($request->topic)) {
+        $topicName = trim($request->topic);
+        if ($topicName !== '') {
+            $topic = Topic::firstOrCreate(
+                ['name' => $topicName],
+                ['slug' => Str::slug($topicName)]
+            );
+            $topicIds[] = $topic->id;
+        }
+    }
+
+    // Attach topics to the post
+    if (!empty($topicIds)) {
+        $post->topics()->sync($topicIds);
+    }
+
+    // Step 3: Handle images
+    if (!empty($request->image_links)) {
+        foreach ($request->image_links as $imageLink) {
+            Image::create([
+                'post_id' => $post->id,
+                'path' => $imageLink,
+            ]);
+        }
+    }
+
+    // Redirect back with success message
+    return redirect()->route('upload')->with('success', 'Post created successfully!');
+}
+
+private function isValidImage($url)
+{
+    try {
+        $headers = get_headers($url, 1);
+
+        if (isset($headers['Content-Type'])) {
+            $contentType = is_array($headers['Content-Type']) ? $headers['Content-Type'][0] : $headers['Content-Type'];
+            return str_starts_with($contentType, 'image/');
+        }
+    } catch (\Exception $e) {
+        return false;
+    }
+
+    return false;
+}
 
     /**
      * Like or unlike a post.

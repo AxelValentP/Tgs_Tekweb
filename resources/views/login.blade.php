@@ -14,7 +14,13 @@
             height: 100vh;
             position: relative;
             overflow: hidden;
+            opacity: 0;
+    transition: opacity 0.5s ease-in;
         }
+        body.loaded {
+            opacity: 1;
+        }
+        
 
         .video-background {
             position: absolute;
@@ -139,6 +145,12 @@
         </div>
     </div>
 
+    <script>
+      // Once DOM is fully loaded, add the 'loaded' class to fade in
+      window.addEventListener('load', function() {
+          document.body.classList.add('loaded');
+      });
+    </script>
     @if ($errors->any())
     <script>
         $(document).ready(function() {
