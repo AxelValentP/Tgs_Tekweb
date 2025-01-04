@@ -11,9 +11,9 @@
         background: #111;
         font-family: sans-serif;
         color: #ccc;
-       
+
     }
-   
+
     .content-wrapper {
         display: flex;
         width: 100%;
@@ -92,21 +92,35 @@
         align-items: center;
         padding: 0.5rem;
     }
+
     .post-header .profile-pic {
-        width: 40px; /* Adjust size as needed */
-        height: 40px; /* Match width for a perfect circle */
-        border-radius: 50%; /* This creates the circular frame */
-        margin-right: 0.5rem; /* Space between the image and username */
-        object-fit: cover; /* Ensures the image fits well */
-        border: 2px solid #333; /* Optional border for aesthetics */
+        width: 40px;
+        /* Adjust size as needed */
+        height: 40px;
+        /* Match width for a perfect circle */
+        border-radius: 50%;
+        /* This creates the circular frame */
+        margin-right: 0.5rem;
+        /* Space between the image and username */
+        object-fit: cover;
+        /* Ensures the image fits well */
+        border: 2px solid #333;
+        /* Optional border for aesthetics */
     }
-    .comment-item-header .comment-user .profile-pic{
-        width: 40px; /* Adjust size as needed */
-        height: 40px; /* Match width for a perfect circle */
-        border-radius: 50%; /* This creates the circular frame */
-        margin-right: 0.5rem; /* Space between the image and username */
-        object-fit: cover; /* Ensures the image fits well */
-        border: 2px solid #333; /* Optional border for aesthetics */
+
+    .comment-item-header .comment-user .profile-pic {
+        width: 40px;
+        /* Adjust size as needed */
+        height: 40px;
+        /* Match width for a perfect circle */
+        border-radius: 50%;
+        /* This creates the circular frame */
+        margin-right: 0.5rem;
+        /* Space between the image and username */
+        object-fit: cover;
+        /* Ensures the image fits well */
+        border: 2px solid #333;
+        /* Optional border for aesthetics */
     }
 
     /* Avatar dihilangkan, hanya username dan waktu */
@@ -493,84 +507,92 @@
     .comment-form button:hover {
         background: #555;
     }
+
     .comment-item-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.comment-user {
-    display: flex;
-    align-items: center;
-    font-weight: bold;
-    color: #ddd;
-}
-
-.like-btn {
-    display: flex;
-    align-items: center;
-    margin-left: 10px;
-    cursor: pointer;
-    color: #aaa;
-    font-size: 0.9rem;
-}
-
-.like-btn.liked i {
-    color: red;
-}
-
-.like-btn:hover {
-    color: #fff;
-}
-
-.comment-time {
-    font-size: 0.8rem;
-    color: #aaa;
-}
-
-.comment-text {
-    margin-top: 5px;
-    color: #ccc;
-    font-size: 0.9rem;
-    line-height: 1.4;
-}
-
-.comment-actions {
-    margin-top: 10px;
-}
-
-.reply-btn {
-    background: none;
-    border: none;
-    color: #008cba;
-    cursor: pointer;
-    font-size: 0.9rem;
-    padding: 0;
-}
-
-.reply-btn:hover {
-    text-decoration: underline;
-}
-
-.content-wrapper{
-    opacity: 0;
-    transition: opacity 1s ease-in;
-}
-.content-wrapper.loaded {
-      opacity: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
 
+    .comment-user {
+        display: flex;
+        align-items: center;
+        font-weight: bold;
+        color: #ddd;
+    }
+
+    .like-btn {
+        display: flex;
+        align-items: center;
+        margin-left: 10px;
+        cursor: pointer;
+        color: #aaa;
+        font-size: 0.9rem;
+    }
+
+    .like-btn.liked i {
+        color: red;
+    }
+
+    .like-btn:hover {
+        color: #fff;
+    }
+
+    .comment-time {
+        font-size: 0.8rem;
+        color: #aaa;
+    }
+
+    .comment-text {
+        margin-top: 5px;
+        color: #ccc;
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+
+    .comment-actions {
+        margin-top: 10px;
+    }
+
+    .reply-btn {
+        background: none;
+        border: none;
+        color: #008cba;
+        cursor: pointer;
+        font-size: 0.9rem;
+        padding: 0;
+    }
+
+    .reply-btn:hover {
+        text-decoration: underline;
+    }
+
+    .content-wrapper {
+        opacity: 0;
+        transition: opacity 1s ease-in;
+    }
+
+    .content-wrapper.loaded {
+        opacity: 1;
+    }
 </style>
 
 <div class="content-wrapper">
     <div class="main-feed">
         <div class="feed-header">
             <h2>Newest</h2>
-            <select id="sortPostsSelect">
-                <option value="newest">Newest</option>
-                <option value="popular">Popular</option>
-                <option value="oldest">Oldest</option>
-            </select>
+            <div class="options">
+                <select id="followFilter">
+                    <option value="showall">Show All</option>
+                    <option value="followed">Followed Only</option>
+                </select>
+
+                <select id="sortPostsSelect">
+                    <option value="newest">Newest</option>
+                    <option value="popular">Popular</option>
+                    <option value="oldest">Oldest</option>
+                </select>
+            </div>
 
         </div>
         <div class="divider"></div>
@@ -638,8 +660,8 @@
 </div>
 
 <script>
-     window.addEventListener('load', function() {
-      document.querySelector('.content-wrapper').classList.add('loaded');
+    window.addEventListener('load', function() {
+        document.querySelector('.content-wrapper').classList.add('loaded');
     });
 </script>
 <script>
@@ -665,19 +687,51 @@
         let currentPostId = null;
 
         // Initial Load
-        fetchPosts(currentSort, currentPage);
+        fetchPosts(currentSort, currentPage, false, currentFilter);
+
+
         const currentUser = {
-            id: {{ auth()->user()->id }},
+            id: {
+                {
+                    auth() - > user() - > id
+                }
+            },
             name: "{{ auth()->user()->name }}"
         };
 
         // Event Listeners
+
+        followSelect.addEventListener('change', () => {
+            const currentFilter = followSelect.value; // Get the current filter value
+            currentSort = sortSelect.value; // Get the current sort value
+            currentPage = 1; // Reset to the first page
+            postContainer.innerHTML = ''; // Clear the current posts
+            fetchPosts(currentSort, currentPage, false, currentFilter); // Fetch posts with filter
+        });
+
         sortSelect.addEventListener('change', () => {
-            currentSort = sortSelect.value;
-            currentPage = 1;
-            postContainer.innerHTML = '';
-            fetchPosts(currentSort, currentPage);
-            resetPostsBtn.style.display = 'none';
+            const currentFilter = followSelect.value; // Get the current filter value
+            currentSort = sortSelect.value; // Get the current sort value
+            currentPage = 1; // Reset to the first page
+            postContainer.innerHTML = ''; // Clear the current posts
+            fetchPosts(currentSort, currentPage, false, currentFilter); // Fetch posts with sorting
+
+            // Update the header title dynamically
+            const headerTitle = document.querySelector('.feed-header h2');
+            switch (currentSort) {
+                case 'popular':
+                    headerTitle.textContent = 'Popular';
+                    break;
+                case 'oldest':
+                    headerTitle.textContent = 'Oldest';
+                    break;
+                case 'newest':
+                default:
+                    headerTitle.textContent = 'Newest';
+                    break;
+            }
+
+            resetPostsBtn.style.display = 'none'; // Hide the reset button if applicable
         });
 
         seeMorePostsBtn.addEventListener('click', () => {
@@ -708,28 +762,27 @@
 
         commentForm.addEventListener('submit', addComment);
 
-        // Function to Fetch Posts from the Server
-        function fetchPosts(sort, page, append = false) {
-            fetch(`/posts?sort=${sort}&page=${page}`)
+        // Function to Fetch Posts
+        function fetchPosts(sort, page, append = false, filter = 'showall') {
+            fetch(`/posts?sort=${sort}&page=${page}&filter=${filter}`)
                 .then(response => response.json())
                 .then(data => {
                     totalPages = data.last_page;
+
+                    if (!append) {
+                        postContainer.innerHTML = ''; // Clear container if not appending
+                    }
 
                     data.data.forEach(post => {
                         const postElement = createPostElement(post);
                         postContainer.appendChild(postElement);
                     });
 
-                    // Update "See More" and "Reset" Buttons
+                    // Check if more pages are available
                     if (currentPage >= totalPages) {
-                        seeMorePostsBtn.textContent = "No more";
-                        seeMorePostsBtn.classList.add('disabled');
-                        seeMorePostsBtn.style.cursor = 'default';
-                        resetPostsBtn.style.display = 'inline-block';
+                        observer.unobserve(scrollTrigger); // Stop observing when no more pages
                     } else {
-                        seeMorePostsBtn.textContent = "See More Posts";
-                        seeMorePostsBtn.classList.remove('disabled');
-                        seeMorePostsBtn.style.cursor = 'pointer';
+                        observer.observe(scrollTrigger); // Re-attach observer for next page
                     }
                 })
                 .catch(error => console.error('Error fetching posts:', error));
@@ -745,16 +798,15 @@
             const header = document.createElement('div');
             header.classList.add('post-header');
             header.innerHTML = `
-                <img src="${post.user.profile_image}" alt="User Profile Picture" class="profile-pic"  onerror="this.onerror=null; this.src='https://salonlfc.com/wp-content/uploads/2018/01/image-not-found-1-scaled.png'; this.alt='Profile Image Not Found'; this.style.border='2px solid red'; this.title='Profile Image Not Found';">
-                <div class="username">${post.user.name}</div>
-                <div class="time">${timeAgo(new Date(post.created_at))}</div>
-            `;
+        <img src="${post.user.profile_image}" alt="User Profile Picture" class="profile-pic">
+        <div class="username">${post.user.name}</div>
+        <div class="time">${timeAgo(new Date(post.created_at))}</div>
+    `;
             card.appendChild(header);
 
             // Image Slider
             const slider = document.createElement('div');
             slider.classList.add('image-slider');
-
             post.images.forEach((image, index) => {
                 const img = document.createElement('img');
                 img.src = image.path; // Assuming 'path' contains the image URL
@@ -766,22 +818,18 @@
                 const prevBtn = document.createElement('div');
                 prevBtn.classList.add('slider-btn', 'slider-prev');
                 prevBtn.innerHTML = '&#10094;';
+                prevBtn.addEventListener('click', () => slideImages(slider, -1));
+
                 const nextBtn = document.createElement('div');
                 nextBtn.classList.add('slider-btn', 'slider-next');
                 nextBtn.innerHTML = '&#10095;';
-
-                prevBtn.addEventListener('click', () => slideImages(slider, -1));
                 nextBtn.addEventListener('click', () => slideImages(slider, 1));
 
                 slider.appendChild(prevBtn);
                 slider.appendChild(nextBtn);
             }
 
-            // Like on Double Click
-            slider.addEventListener('dblclick', () => {
-                toggleLike(post.id, card);
-            });
-
+            slider.addEventListener('dblclick', () => toggleLike(post.id, card));
             card.appendChild(slider);
 
             // Post Footer
@@ -809,12 +857,24 @@
             });
 
             const likeBtn = actions.querySelector('.like-btn');
-            likeBtn.addEventListener('click', () => {
-                toggleLike(post.id, card);
-            });
+            likeBtn.addEventListener('click', () => toggleLike(post.id, card));
 
             return card;
         }
+
+        // Infinite Scroll Setup
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    currentPage++;
+                    fetchPosts(currentSort, currentPage, true, followSelect.value);
+                }
+            });
+        });
+
+        // Start observing the trigger element
+        observer.observe(scrollTrigger);
 
         // Function to Update Actions HTML
         function updateActionsHTML(actions, post) {
@@ -884,40 +944,40 @@
         // Function to Show Comments in Modal
         // Show comments in modal
         function showComments(postId) {
-    currentPostId = postId; // Set the current post ID
-    commentList.innerHTML = ''; // Clear previous comments
-    commentModal.classList.add('show'); // Show the modal
+            currentPostId = postId; // Set the current post ID
+            commentList.innerHTML = ''; // Clear previous comments
+            commentModal.classList.add('show'); // Show the modal
 
-    // Fetch comments for the specific post
-    fetch(`/posts/${postId}/comments`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Failed to fetch comments');
-            }
-            return response.json();
-        })
-        .then(comments => {
-            if (comments.length === 0) {
-                commentList.innerHTML = '<p>No comments yet. Be the first to comment!</p>';
-            } else {
-                comments.forEach(comment => {
-                    const commentElement = createCommentWithReplies(comment);
-                    commentList.appendChild(commentElement);
+            // Fetch comments for the specific post
+            fetch(`/posts/${postId}/comments`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch comments');
+                    }
+                    return response.json();
+                })
+                .then(comments => {
+                    if (comments.length === 0) {
+                        commentList.innerHTML = '<p>No comments yet. Be the first to comment!</p>';
+                    } else {
+                        comments.forEach(comment => {
+                            const commentElement = createCommentWithReplies(comment);
+                            commentList.appendChild(commentElement);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching comments:', error);
+                    commentList.innerHTML = '<p>Failed to load comments. Please try again later.</p>';
                 });
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching comments:', error);
-            commentList.innerHTML = '<p>Failed to load comments. Please try again later.</p>';
-        });
-}
+        }
 
 
-// Create a comment element with reply functionality
-function createCommentWithReplies(comment) {
-    const commentItem = document.createElement('div');
-    commentItem.classList.add('comment-item');
-    commentItem.innerHTML = `
+        // Create a comment element with reply functionality
+        function createCommentWithReplies(comment) {
+            const commentItem = document.createElement('div');
+            commentItem.classList.add('comment-item');
+            commentItem.innerHTML = `
         <div class="comment-item-header">
             <span class="comment-user">
                 <img src="${comment.user.profile_image}" alt="User Profile Picture" class="profile-pic">
@@ -940,125 +1000,127 @@ function createCommentWithReplies(comment) {
         </form>
     `;
 
-    const replyBtn = commentItem.querySelector('.reply-btn');
-    const replyForm = commentItem.querySelector(`#reply-form-${comment.id}`);
-    const repliesList = commentItem.querySelector(`#replies-${comment.id}`);
-    const likeBtn = commentItem.querySelector('.like-btn');
+            const replyBtn = commentItem.querySelector('.reply-btn');
+            const replyForm = commentItem.querySelector(`#reply-form-${comment.id}`);
+            const repliesList = commentItem.querySelector(`#replies-${comment.id}`);
+            const likeBtn = commentItem.querySelector('.like-btn');
 
-    // Toggle reply form visibility
-    replyBtn.addEventListener('click', () => {
-        replyForm.style.display = replyForm.style.display === 'none' ? 'block' : 'none';
-        if (replyForm.style.display === 'block') {
-            fetchReplies(comment.id, repliesList);
+            // Toggle reply form visibility
+            replyBtn.addEventListener('click', () => {
+                replyForm.style.display = replyForm.style.display === 'none' ? 'block' : 'none';
+                if (replyForm.style.display === 'block') {
+                    fetchReplies(comment.id, repliesList);
+                }
+            });
+
+            // Handle reply submission
+            replyForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const input = replyForm.querySelector('input');
+                const replyText = input.value.trim();
+                if (!replyText) return;
+
+                fetch(`/comments/${comment.id}/replies`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            text: replyText
+                        }),
+                    })
+                    .then(response => response.json())
+                    .then(reply => {
+                        input.value = '';
+                        fetchReplies(comment.id, repliesList); // Refresh replies after adding
+                    })
+                    .catch(error => console.error('Error adding reply:', error));
+            });
+
+            // Handle comment like
+            likeBtn.addEventListener('click', () => {
+                const commentId = likeBtn.dataset.commentId;
+
+                fetch(`/comments/${commentId}/like`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json',
+                        },
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Update like button and count
+                        likeBtn.classList.toggle('liked');
+                        likeBtn.innerHTML = `<i class="lni lni-heart"></i> ${data.likes_count}`;
+                    })
+                    .catch(error => console.error('Error liking comment:', error));
+            });
+            // Delete comment button handler
+            const deleteCommentBtn = commentItem.querySelector('.delete-comment-btn');
+            if (deleteCommentBtn) {
+                deleteCommentBtn.addEventListener('click', () => deleteComment(comment.id));
+            }
+
+            return commentItem;
         }
-    });
 
-    // Handle reply submission
-    replyForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const input = replyForm.querySelector('input');
-        const replyText = input.value.trim();
-        if (!replyText) return;
-
-        fetch(`/comments/${comment.id}/replies`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ text: replyText }),
-        })
-            .then(response => response.json())
-            .then(reply => {
-                input.value = '';
-                fetchReplies(comment.id, repliesList); // Refresh replies after adding
-            })
-            .catch(error => console.error('Error adding reply:', error));
-    });
-
-    // Handle comment like
-    likeBtn.addEventListener('click', () => {
-        const commentId = likeBtn.dataset.commentId;
-
-        fetch(`/comments/${commentId}/like`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json',
-            },
-        })
-            .then(response => response.json())
-            .then(data => {
-                // Update like button and count
-                likeBtn.classList.toggle('liked');
-                likeBtn.innerHTML = `<i class="lni lni-heart"></i> ${data.likes_count}`;
-            })
-            .catch(error => console.error('Error liking comment:', error));
-    });
-    // Delete comment button handler
-    const deleteCommentBtn = commentItem.querySelector('.delete-comment-btn');
-    if (deleteCommentBtn) {
-        deleteCommentBtn.addEventListener('click', () => deleteComment(comment.id));
-    }
-
-    return commentItem;
-}
-
-function deleteComment(commentId) {
-    fetch(`/comments/${commentId}`, {
-        method: 'DELETE',
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Content-Type': 'application/json'
+        function deleteComment(commentId) {
+            fetch(`/comments/${commentId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to delete comment');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    showComments(currentPostId); // Refresh comments
+                })
+                .catch(error => console.error('Error deleting comment:', error));
         }
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Failed to delete comment');
+
+        function deleteReply(replyId) {
+            fetch(`/replies/${replyId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to delete reply');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    showComments(currentPostId); // Refresh comments
+                })
+                .catch(error => console.error('Error deleting reply:', error));
         }
-        return response.json();
-    })
-    .then(data => {
-        showComments(currentPostId); // Refresh comments
-    })
-    .catch(error => console.error('Error deleting comment:', error));
-}
-
-function deleteReply(replyId) {
-    fetch(`/replies/${replyId}`, {
-        method: 'DELETE',
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Failed to delete reply');
-        }
-        return response.json();
-    })
-    .then(data => {
-        showComments(currentPostId); // Refresh comments
-    })
-    .catch(error => console.error('Error deleting reply:', error));
-}
 
 
 
-// Fetch replies for a specific comment
-function fetchReplies(commentId, repliesList) {
-    fetch(`/comments/${commentId}/replies`)
-        .then(response => response.json())
-        .then(replies => {
-            repliesList.innerHTML = ''; // Clear existing replies
-            if (replies.length === 0) {
-                repliesList.innerHTML = '<p>No replies yet.</p>';
-            } else {
-                replies.forEach(reply => {
-                    const replyElement = document.createElement('div');
-                    replyElement.classList.add('comment-item');
-                    replyElement.innerHTML = `
+        // Fetch replies for a specific comment
+        function fetchReplies(commentId, repliesList) {
+            fetch(`/comments/${commentId}/replies`)
+                .then(response => response.json())
+                .then(replies => {
+                    repliesList.innerHTML = ''; // Clear existing replies
+                    if (replies.length === 0) {
+                        repliesList.innerHTML = '<p>No replies yet.</p>';
+                    } else {
+                        replies.forEach(reply => {
+                            const replyElement = document.createElement('div');
+                            replyElement.classList.add('comment-item');
+                            replyElement.innerHTML = `
                         <div class="comment-item-header">
                             <span class="comment-user">
                                 <img src="${reply.user.profile_image}" alt="User Profile Picture" class="profile-pic">
@@ -1069,19 +1131,19 @@ function fetchReplies(commentId, repliesList) {
                         </div>
                         <div class="comment-text">${reply.text}</div>
                     `;
-                    const deleteReplyBtn = replyElement.querySelector('.delete-reply-btn');
-                    if (deleteReplyBtn) {
-                        deleteReplyBtn.addEventListener('click', () => deleteReply(reply.id));
+                            const deleteReplyBtn = replyElement.querySelector('.delete-reply-btn');
+                            if (deleteReplyBtn) {
+                                deleteReplyBtn.addEventListener('click', () => deleteReply(reply.id));
+                            }
+                            repliesList.appendChild(replyElement);
+                        });
                     }
-                    repliesList.appendChild(replyElement);
+                })
+                .catch(error => {
+                    console.error('Error fetching replies:', error);
+                    repliesList.innerHTML = '<p>Failed to load replies. Please try again later.</p>';
                 });
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching replies:', error);
-            repliesList.innerHTML = '<p>Failed to load replies. Please try again later.</p>';
-        });
-}
+        }
 
         // Function to Add a Comment
         function addComment(e) {
@@ -1119,17 +1181,9 @@ function fetchReplies(commentId, repliesList) {
         loadMoreProfiles();
 
         // Search Functionality for Topics and Profiles
-        const searchTopicsInput = document.getElementById('searchTopicsInput');
-        const searchProfilesInput = document.getElementById('searchProfilesInput');
 
         searchTopicsInput.addEventListener('input', filterTopics);
         searchProfilesInput.addEventListener('input', filterProfiles);
-
-        // Functions for Topics Pagination
-        let topicIndex = 0;
-        const topicContainer = document.getElementById('topicContainer');
-        const seeMoreTopicsBtn = document.getElementById('seeMoreTopicsBtn');
-        const resetTopicsBtn = document.getElementById('resetTopicsBtn');
 
         seeMoreTopicsBtn.addEventListener('click', loadMoreTopics);
         resetTopicsBtn.addEventListener('click', resetTopics);
@@ -1171,10 +1225,7 @@ function fetchReplies(commentId, repliesList) {
         }
 
         // Functions for Profiles Pagination
-        let profileIndex = 0;
-        const profileContainer = document.getElementById('profileContainer');
-        const seeMoreProfileBtn = document.getElementById('seeMoreProfileBtn');
-        const resetProfileBtn = document.getElementById('resetProfileBtn');
+
 
         seeMoreProfileBtn.addEventListener('click', loadMoreProfiles);
         resetProfileBtn.addEventListener('click', resetProfiles);
@@ -1239,7 +1290,296 @@ function fetchReplies(commentId, repliesList) {
         }
     });
 
-   
+    // ========== TOPICS & PROFILES SECTION =========== //
+
+    // =========================================================
+    // =============== TOPICS SECTION ==========================
+    // =========================================================
+    const searchTopicsInput = document.getElementById('searchTopicsInput');
+    const topicContainer = document.getElementById('topicContainer');
+    const seeMoreTopicsBtn = document.getElementById('seeMoreTopicsBtn');
+    const resetTopicsBtn = document.getElementById('resetTopicsBtn');
+
+    let allTopics = []; // Menampung semua topics acak dari server
+    let topicIndex = 0; // Penanda index "See More"
+    const topicChunkSize = 3; // Jumlah item per "See More"
+    let searchActiveTopics = false; // Apakah user sedang melakukan search?
+
+    // 1) Fetch data default (topics shuffled)
+    fetch('/topics/all-shuffled')
+        .then(res => res.json())
+        .then(data => {
+            allTopics = data;
+            loadMoreTopics(); // Tampilkan 3 item awal
+        })
+        .catch(err => console.error('Error fetching /topics/all-shuffled:', err));
+
+    let debounceTimeout = null;
+
+
+    searchTopicsInput.addEventListener('input', function() {
+        const query = this.value.trim();
+
+        // Clear request sebelumnya
+        clearTimeout(debounceTimeout);
+
+        // Debounce 300 ms
+        debounceTimeout = setTimeout(() => {
+            // Di sini baru fetch
+            doTopicSearch(query);
+        }, 150);
+    });
+
+    function doTopicSearch(query) {
+        topicContainer.innerHTML = '';
+        seeMoreTopicsBtn.style.display = 'none';
+        resetTopicsBtn.style.display = 'none';
+
+        if (!query) {
+            searchActiveTopics = false;
+            topicIndex = 0; // Reset index
+            topicContainer.innerHTML = '';
+            seeMoreTopicsBtn.style.display = 'inline-block'; // Tampilkan "See More"
+            resetTopicsBtn.style.display = 'none'; // Sembunyikan reset
+            loadMoreTopics(); // Munculkan 3 item awal
+            return;
+        }
+
+        fetch('/topics/search?query=' + encodeURIComponent(query))
+            .then(res => res.json())
+            .then(data => {
+                if (data.length === 0) {
+                    topicContainer.innerHTML = '<p>No Topics Found.</p>';
+                } else {
+                    data.forEach(topic => {
+                        const a = document.createElement('a');
+                        a.href = '#';
+                        a.textContent = '#' + topic.name;
+                        topicContainer.appendChild(a);
+                    });
+                }
+            })
+            .catch(err => console.error(err));
+    }
+
+    // 3) Load more topics (default data)
+    seeMoreTopicsBtn.addEventListener('click', loadMoreTopics);
+
+    function loadMoreTopics() {
+        // Jika user sedang search, batalkan "See More"
+        if (searchActiveTopics) return;
+
+        const slice = allTopics.slice(topicIndex, topicIndex + topicChunkSize);
+        slice.forEach(t => {
+            const a = document.createElement('a');
+            a.href = '#';
+            a.textContent = '# ' + t; // 't' karena di /topics/all-shuffled => pluck('name')
+            topicContainer.appendChild(a);
+        });
+        topicIndex += topicChunkSize;
+
+        if (topicContainer.children.length > 3) {
+            resetTopicsBtn.style.display = 'inline-block'; // Show reset button
+        }
+
+        // Jika sudah melebihi total data
+        if (topicIndex >= allTopics.length) {
+            seeMoreTopicsBtn.textContent = 'No more';
+            seeMoreTopicsBtn.classList.add('disabled');
+            seeMoreTopicsBtn.style.cursor = 'default';
+            resetTopicsBtn.style.display = 'inline-block';
+        }
+    }
+
+    // 4) Reset button
+    resetTopicsBtn.addEventListener('click', () => {
+        // Kembalikan ke awal
+        seeMoreTopicsBtn.textContent = 'See More';
+        seeMoreTopicsBtn.classList.remove('disabled');
+        seeMoreTopicsBtn.style.cursor = 'pointer';
+        resetTopicsBtn.style.display = 'none';
+
+        topicIndex = 0;
+        topicContainer.innerHTML = '';
+        loadMoreTopics();
+    });
+
+
+    // =========================================================
+    // =============== USERS SECTION ===========================
+    // =========================================================
+    const searchProfilesInput = document.getElementById('searchProfilesInput');
+    const profileContainer = document.getElementById('profileContainer');
+    const seeMoreProfileBtn = document.getElementById('seeMoreProfileBtn');
+    const resetProfileBtn = document.getElementById('resetProfileBtn');
+
+    let allUsers = []; // Menampung semua users acak
+    let profileIndex = 0; // Penanda index "See More"
+    const userChunkSize = 3;
+    let searchActiveUsers = false; // Apakah user sedang melakukan search?
+
+    // 1) Fetch data default (users shuffled)
+    fetch('/users/all-shuffled')
+        .then(res => res.json())
+        .then(data => {
+            allUsers = data;
+            loadMoreProfiles();
+        })
+        .catch(err => console.error('Error fetching /users/all-shuffled:', err));
+
+
+    // Variabel penampung timeout untuk debounce
+    let debounceProfilesTimeout = null;
+
+    // Ganti event 'input' seperti ini
+    searchProfilesInput.addEventListener('input', function() {
+        // Bersihkan timeout sebelumnya (jika ada)
+        clearTimeout(debounceProfilesTimeout);
+
+        // Simpan nilai query
+        const query = this.value.trim();
+
+        // Tunda eksekusi fetch selama 300ms setelah user berhenti mengetik
+        debounceProfilesTimeout = setTimeout(() => {
+            doUserSearch(query);
+        }, 150);
+    });
+
+    // Fungsi yang benar-benar melakukan fetch ke server
+    function doUserSearch(query) {
+        if (!query) {
+            // Query kosong -> kembali ke "default data" mode
+            searchActiveUsers = false;
+            profileIndex = 0;
+            profileContainer.innerHTML = '';
+            seeMoreProfileBtn.style.display = 'inline-block';
+            resetProfileBtn.style.display = 'none';
+            loadMoreProfiles();
+            return;
+        }
+
+        // Ada query -> "search mode"
+        searchActiveUsers = true;
+
+        profileContainer.innerHTML = '';
+        seeMoreProfileBtn.style.display = 'none';
+        resetProfileBtn.style.display = 'none';
+
+        // Lakukan pencarian
+        fetch('/users/search?query=' + encodeURIComponent(query))
+            .then(response => response.json())
+            .then(data => {
+                if (data.length === 0) {
+                    profileContainer.innerHTML = '<p>No Profiles Found.</p>';
+                } else {
+                    data.forEach(user => {
+                        // Bungkus satu user dalam div "user-list-item"
+                        const userItem = document.createElement('div');
+                        userItem.classList.add('user-list-item');
+
+                        // Buat elemen avatar
+                        const avatar = document.createElement('div');
+                        avatar.classList.add('user-avatar');
+
+                        // Atau, kalau nanti ada sumber gambar: 
+                        // const avatar = document.createElement('img');
+                        // avatar.src = user.avatar_url || 'default-avatar.png';
+                        // avatar.classList.add('user-avatar');
+
+                        // Buat elemen link atau teks nama user
+                        const userNameLink = document.createElement('a');
+                        userNameLink.href = "#";
+                        userNameLink.textContent = user.name;
+                        userNameLink.style.color = '#ccc';
+                        userNameLink.style.textDecoration = 'none';
+
+                        // Rangkai: avatar + nama
+                        userItem.appendChild(avatar);
+                        userItem.appendChild(userNameLink);
+
+                        // Masukkan ke container
+                        profileContainer.appendChild(userItem);
+                    });
+
+                }
+            })
+            .catch(error => {
+                console.error('Error searching users:', error);
+                profileContainer.innerHTML = '<p>Error loading profiles.</p>';
+            });
+    }
+
+
+    // 3) Load more profiles (default data)
+    seeMoreProfileBtn.addEventListener('click', loadMoreProfiles);
+
+    function loadMoreProfiles() {
+        if (searchActiveUsers) return;
+
+        const slice = allUsers.slice(profileIndex, profileIndex + userChunkSize);
+        slice.forEach(user => {
+            // Create the user item container
+            const userItem = document.createElement('div');
+            userItem.classList.add('user-list-item');
+            userItem.style.display = 'flex';
+            userItem.style.alignItems = 'center';
+            userItem.style.marginBottom = '10px';
+
+            // Create the avatar element (using user's profile image)
+            const avatar = document.createElement('img');
+            avatar.src = user.profile_image || 'https://via.placeholder.com/40';
+            avatar.alt = user.name;
+            avatar.style.width = '40px';
+            avatar.style.height = '40px';
+            avatar.style.borderRadius = '50%'; // Make it circular
+            avatar.style.marginRight = '10px'; // Space between image and name
+
+            // Create the user name link
+            const userNameLink = document.createElement('a');
+            userNameLink.href = '#'; // Adjust this if you have a profile page link
+            userNameLink.textContent = user.name;
+            userNameLink.style.color = '#ccc';
+            userNameLink.style.textDecoration = 'none';
+
+            // Assemble the user item
+            userItem.appendChild(avatar);
+            userItem.appendChild(userNameLink);
+
+            // Append the user item to the profile container
+            profileContainer.appendChild(userItem);
+        });
+
+        profileIndex += userChunkSize;
+
+        // Show the reset button if more than 3 profiles are displayed
+        if (profileContainer.children.length > 3) {
+            resetProfileBtn.style.display = 'inline-block';
+        }
+
+        // Check if all profiles have been loaded
+        if (profileIndex >= allUsers.length) {
+            seeMoreProfileBtn.textContent = 'No more';
+            seeMoreProfileBtn.classList.add('disabled');
+            seeMoreProfileBtn.style.cursor = 'default';
+        } else {
+            seeMoreProfileBtn.textContent = 'See More';
+            seeMoreProfileBtn.classList.remove('disabled');
+            seeMoreProfileBtn.style.cursor = 'pointer';
+        }
+    }
+
+
+    // 4) Reset button
+    resetProfileBtn.addEventListener('click', () => {
+        seeMoreProfileBtn.textContent = 'See More';
+        seeMoreProfileBtn.classList.remove('disabled');
+        seeMoreProfileBtn.style.cursor = 'pointer';
+        resetProfileBtn.style.display = 'none';
+
+        profileIndex = 0;
+        profileContainer.innerHTML = '';
+        loadMoreProfiles();
+    });
 </script>
 
 @endsection
