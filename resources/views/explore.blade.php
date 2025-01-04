@@ -85,6 +85,13 @@
         overflow: hidden;
         border: 1px solid #333;
         position: relative;
+        transition: all ease 1s;
+    }
+
+    .post-card:hover .post-header,
+    .post-card:hover .post-footer {
+        background-color: #111;
+        color: #fff;
     }
 
     .post-header {
